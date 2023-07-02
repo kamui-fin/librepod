@@ -1,7 +1,8 @@
+use chrono::{DateTime, TimeZone, Utc};
 use rss::{Channel, Enclosure, Item};
 use uuid::Uuid;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 struct Subscription {
     id: Uuid, // based on link
     rss_link: String,
@@ -15,8 +16,6 @@ struct Subscription {
     complete: Option<bool>,
     language: Option<String>,
     image: Option<String>,
-
-    episodes: Vec<Episode>,
 }
 
 #[derive(Debug, Default)]
@@ -26,7 +25,7 @@ struct Episode {
     link: Option<String>,
     description: Option<String>,
     content: Option<String>, // itunes summary or actual content
-    pub_date: Option<String>,
+    pub_date: Option<DateTime<Utc>>,
     enclosure: Option<Enclosure>,
 
     // itunes
@@ -34,6 +33,14 @@ struct Episode {
     image: Option<String>,
     keywords: Option<String>,
     subtitle: Option<String>,
+
+    source: Subscription,
+}
+
+fn parse_rfc2822_timestamp(timestamp: &str) -> Result<DateTime<Utc>, chrono::ParseError> {
+    let parsed_datetime = DateTime::parse_from_rfc2822(timestamp)?;
+    let utc_datetime = parsed_datetime.with_timezone(&Utc);
+    Ok(utc_datetime)
 }
 
 fn hash_subscription_id(channel: &Channel) -> Uuid {
@@ -50,7 +57,8 @@ fn hash_episode_id(item: &Item) -> Option<Uuid> {
     Some(uuid)
 }
 
-fn get_episode_data(channel: &Channel) -> Vec<Episode> {
+fn get_episode_data(channel: &Channel, rss_link: String) -> Vec<Episode> {
+    let source = get_channel_data(channel, rss_link);
     channel
         .items()
         .iter()
@@ -58,7 +66,9 @@ fn get_episode_data(channel: &Channel) -> Vec<Episode> {
             let title = item.title().map(ToString::to_string);
             let link = item.link().map(ToString::to_string);
             let enclosure = item.enclosure().cloned();
-            let pub_date = item.pub_date().map(ToString::to_string);
+            let pub_date = item
+                .pub_date()
+                .map(|date| parse_rfc2822_timestamp(date).unwrap());
             let description = item.description().map(ToString::to_string);
             let content = item.content().map(ToString::to_string);
             let id = hash_episode_id(item)?;
@@ -71,6 +81,7 @@ fn get_episode_data(channel: &Channel) -> Vec<Episode> {
                 content,
                 pub_date,
                 enclosure,
+                source: source.clone(),
                 ..Episode::default()
             };
 
@@ -120,7 +131,6 @@ fn get_channel_data(channel: &Channel, rss_link: String) -> Subscription {
         language,
         rss_link,
         image,
-        episodes: get_episode_data(channel),
         ..Subscription::default()
     };
 
@@ -157,16 +167,35 @@ fn get_channel_data(channel: &Channel, rss_link: String) -> Subscription {
     }
 }
 
-async fn process_rss(source: &str) -> Subscription {
+async fn process_rss(source: &str) -> Vec<Episode> {
     let content = reqwest::get(source).await.unwrap().bytes().await.unwrap();
     let channel = Channel::read_from(&content[..]).unwrap();
-    get_channel_data(&channel, source.to_string())
+    get_episode_data(&channel, source.to_string())
+}
+
+async fn get_feed(sources: Vec<&str>) -> Vec<Episode> {
+    let mut feed = vec![];
+    for source in sources {
+        feed.extend(process_rss(source).await);
+    }
+    feed.sort_by_key(|ep| ep.pub_date);
+    feed.reverse();
+    feed
 }
 
 #[tokio::main]
 async fn main() {
     // temporary testing
-    let source = "https://feeds.rebuild.fm/rebuildfm";
-    let sub = process_rss(source).await;
-    println!("{:#?}", sub);
+    // assume pubDate exists for now
+    let sources = vec![
+        "https://feeds.rebuild.fm/rebuildfm",
+        "https://getpodcast.xyz/data/ximalaya/12215723.xml",
+        "https://getpodcast.xyz/data/ximalaya/29161862.xml",
+        "https://getpodcast.xyz/data/163/7.xml",
+        "https://getpodcast.xyz/data/ximalaya/13773679.xml",
+        "https://tlxxfm.com/feed/podcast",
+    ];
+    for ep in get_feed(sources).await {
+        println!("{} {:#?}", ep.source.title, ep.pub_date.unwrap_or_default());
+    }
 }
