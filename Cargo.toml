@@ -6,9 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rss = "^2.0.1"
-reqwest = "^0.11.18"
-tokio = { version = "1.29.1", features = ["full"] }
-uuid = { version = "1.4.0", features = ["v4", "v5"] }
+rss = "2.0.1"
+reqwest = "0.11.18"
 futures = "0.3.28"
 chrono = "0.4.26"
+tokio = { version = "1.29.1", features = ["full"] }
+uuid = { version = "1.4.0", features = ["v4", "v5"] }
+http-cache-semantics = { version = "1.0.1", features = ["reqwest"] }
+http = "0.2.9"
