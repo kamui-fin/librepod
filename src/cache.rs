@@ -8,6 +8,12 @@ use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 use url::Url;
 
+#[derive(Debug, Deserialize, Serialize)]
+struct RedisCacheItem {
+    cached_response: HttpResponse,
+    policy: CachePolicy,
+}
+
 #[derive(Debug)]
 pub enum CachedHttpResponse {
     Hit(HttpResponse),
@@ -97,13 +103,22 @@ fn update_request_parts(request: RequestBuilder, parts: request::Parts) -> Reque
 
 pub async fn get_response_with_cache(
     request_builder: RequestBuilder,
-    cache: &mut HashMap<String, (CachePolicy, HttpResponse)>,
+    con: &mut redis::aio::Connection,
     source: &str,
 ) -> CachedHttpResponse {
     let orig_request = request_builder.try_clone().unwrap().build().unwrap();
 
     // try to pull from cache if possible
-    if let Some((policy, cached_response)) = cache.get_mut(&source.to_string()) {
+    if let Ok(prev_cached_item_json) = redis::cmd("GET")
+        .arg(source)
+        .query_async::<_, String>(con)
+        .await
+    {
+        let RedisCacheItem {
+            policy,
+            mut cached_response,
+        } = serde_json::from_str(&prev_cached_item_json).unwrap();
+
         match policy.before_request(&orig_request, SystemTime::now()) {
             BeforeRequest::Fresh(parts) => {
                 cached_response.update_headers(&parts);
@@ -129,8 +144,18 @@ pub async fn get_response_with_cache(
                         // still have to update headers
                         response.update_headers(&parts);
                         // update body in cache
-                        cache.insert(source.to_string(), (policy, response));
-                        CachedHttpResponse::Miss(cache.get(&source.to_string()).unwrap().1.clone())
+                        let cache_item = RedisCacheItem {
+                            policy,
+                            cached_response: response,
+                        };
+                        let cache_item_json = serde_json::to_string(&cache_item).unwrap();
+                        let result = redis::cmd("SET")
+                            .arg(source)
+                            .arg(cache_item_json)
+                            .query_async::<_, ()>(con)
+                            .await;
+                        println!("{:#?}", result);
+                        CachedHttpResponse::Miss(cache_item.cached_response)
                     }
                 }
             }
@@ -141,8 +166,20 @@ pub async fn get_response_with_cache(
         let cache_policy = CachePolicy::new(&orig_request, &response);
         let response = if cache_policy.is_storable() {
             println!("STORING IN CACHE");
-            cache.insert(source.to_string(), (cache_policy, response));
-            cache.get(&source.to_string()).unwrap().1.clone()
+
+            let cache_item = RedisCacheItem {
+                policy: cache_policy,
+                cached_response: response,
+            };
+            let cache_item_json = serde_json::to_string(&cache_item).unwrap();
+            let result = redis::cmd("SET")
+                .arg(source)
+                .arg(cache_item_json)
+                .query_async::<_, ()>(con)
+                .await;
+            println!("{:#?}", result);
+
+            cache_item.cached_response
         } else {
             response
         };
