@@ -154,7 +154,6 @@ pub async fn get_response_with_cache(
                             .arg(cache_item_json)
                             .query_async::<_, ()>(con)
                             .await;
-                        println!("{:#?}", result);
                         CachedHttpResponse::Miss(cache_item.cached_response)
                     }
                 }
@@ -177,7 +176,6 @@ pub async fn get_response_with_cache(
                 .arg(cache_item_json)
                 .query_async::<_, ()>(con)
                 .await;
-            println!("{:#?}", result);
 
             cache_item.cached_response
         } else {
