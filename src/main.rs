@@ -1,4 +1,5 @@
 mod cache;
+mod config;
 mod db;
 mod error;
 mod feed;
@@ -6,42 +7,45 @@ mod models;
 mod routes;
 
 use crate::routes::build_router;
-use anyhow::Result;
-use redis::aio::ConnectionManager;
-use sqlx::{postgres::PgPoolOptions, PgPool};
+use anyhow::{Context, Result};
+use config::{get_app_uri, init_context};
 use std::time::Duration;
+use tokio_cron_scheduler::{Job, JobScheduler};
 
-#[derive(Clone)]
-pub struct AppState {
-    redis_manager: ConnectionManager,
-    pool: PgPool,
+async fn start_fetch_feed_job() -> Result<()> {
+    // generate feed job every 2 hrs
+    let sched = JobScheduler::new().await?;
+    sched
+        .add(Job::new_repeated_async(
+            Duration::from_secs(60 * 60 * 2),
+            |_, _| {
+                Box::pin(async move {
+                    let client = reqwest::Client::new();
+                    let res = client
+                        .put(format!("http://{}/feed/refresh", get_app_uri()))
+                        .send()
+                        .await;
+                    println!("Periodic Sync status: {:#?}", res);
+                })
+            },
+        )?)
+        .await?;
+    sched
+        .start()
+        .await
+        .context("could not start feed generation job")
 }
 
 async fn start_server() -> Result<()> {
-    let redis_conn_uri =
-        std::env::var("REDIS_URL").unwrap_or_else(|_| "redis://127.0.0.1".to_string());
-    let client = redis::Client::open(redis_conn_uri).unwrap();
-    let redis_manager = ConnectionManager::new(client).await.unwrap();
+    let state = init_context().await;
+    let app_url = get_app_uri();
+    let app = build_router().with_state(state).into_make_service();
 
-    let pg_conn_uri = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "postgres://postgres:postgres@localhost/librepod".to_string());
-    let pool = PgPoolOptions::new()
-        .max_connections(5)
-        .acquire_timeout(Duration::from_secs(3))
-        .connect(&pg_conn_uri)
-        .await
-        .expect("can't connect to postgres db");
+    start_fetch_feed_job().await?;
 
-    let state = AppState {
-        redis_manager,
-        pool,
-    };
-    let app = build_router().with_state(state);
-
-    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    axum::Server::bind(&app_url.parse().unwrap())
+        .serve(app)
+        .await?;
 
     Ok(())
 }

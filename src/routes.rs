@@ -9,10 +9,10 @@ use serde::Deserialize;
 use serde_json::json;
 
 use crate::{
+    config::AppContext,
     db,
     error::AppError,
     feed::{delta_update_feed, get_rss_data, update_all_feeds, RssData},
-    AppState,
 };
 
 #[derive(Deserialize)]
@@ -20,13 +20,13 @@ struct AddChannel {
     rss_link: String,
 }
 
-async fn get_channel_list(State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
+async fn get_channel_list(State(state): State<AppContext>) -> Result<impl IntoResponse, AppError> {
     let channels = db::get_channels(&state.pool).await?;
     Ok(Json(channels))
 }
 
 async fn add_channel(
-    State(mut state): State<AppState>,
+    State(mut state): State<AppContext>,
     Json(input): Json<AddChannel>,
 ) -> Result<impl IntoResponse, AppError> {
     let data = get_rss_data(&input.rss_link, &mut state.redis_manager)
@@ -41,23 +41,23 @@ async fn add_channel(
 
 async fn delete_channel(
     Path(id): Path<String>,
-    State(state): State<AppState>,
+    State(state): State<AppContext>,
 ) -> Result<impl IntoResponse, AppError> {
     let res = db::delete_channel(id, &state.pool).await?;
     Ok(Json(json!({ "ok": res })))
 }
 
-async fn retrieve_feed(State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
+async fn retrieve_feed(State(state): State<AppContext>) -> Result<impl IntoResponse, AppError> {
     let episodes = db::get_episodes(&state.pool).await?;
     Ok(Json(episodes))
 }
 
-async fn refresh_feed(State(mut state): State<AppState>) -> Result<impl IntoResponse, AppError> {
+async fn refresh_feed(State(mut state): State<AppContext>) -> Result<impl IntoResponse, AppError> {
     update_all_feeds(&mut state.redis_manager, &state.pool).await?;
     Ok(Json(json!({"ok": true})))
 }
 
-pub fn build_router() -> Router<AppState> {
+pub fn build_router() -> Router<AppContext> {
     let channel_routes = Router::new().route(
         "/",
         get(get_channel_list)
