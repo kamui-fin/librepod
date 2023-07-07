@@ -16,17 +16,6 @@ pub struct PodcastChannel {
     pub categories: Vec<Category>,
 }
 
-pub struct DbPodcastChannel {
-    id: String,
-    rss_link: String,
-    website_link: String,
-    title: String,
-    description_text_id: Option<i32>,
-    language: Option<String>,
-    logo_id: Option<i32>,
-    icon_id: Option<i32>,
-}
-
 #[derive(Debug, Clone)]
 pub struct PodcastEpisode {
     pub source_id: String,
@@ -39,4 +28,30 @@ pub struct PodcastEpisode {
     pub authors: Vec<Person>,
     pub categories: Vec<Category>,
     pub media: MediaObject,
+}
+
+// Db result structs
+// SQLx limitation: just high-level barebones sqlx result, nested field population required
+#[derive(Debug, Clone)]
+pub struct DbPodcastEpisode {
+    pub id: String,
+    pub channel_id: String,
+    pub title: String,
+    pub website_link: String,
+    pub published: Option<DateTime<Utc>>,
+    pub content_id: Option<i32>,
+    pub summary_text_id: Option<i32>,
+    pub media_object_id: Option<i32>,
+}
+
+#[derive(Debug)]
+pub struct DbPodcastChannel {
+    pub id: String,
+    pub rss_link: String,
+    pub website_link: String,
+    pub title: String,
+    pub description_text_id: Option<i32>,
+    pub language: Option<String>,
+    pub logo_id: Option<i32>,
+    pub icon_id: Option<i32>,
 }

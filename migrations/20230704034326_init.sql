@@ -65,30 +65,27 @@ CREATE TABLE content (
     src text
 );
 
-CREATE TABLE media_content (
-    id serial primary key not null,
-    content_type text,
-    height integer,
-    width integer,
-    duration interval,
-    size bigint
-);
-
 CREATE TABLE media_object (
     id serial primary key not null,
     duration interval,
-    content_id integer references media_content(id) ON DELETE CASCADE
+
+    -- One media attachment for now
+    url text,
+    content_type text,
+    height integer,
+    width integer,
+    size bigint
 );
 
 CREATE TABLE episode (
     id text primary key not null,
-    channel_id text references channel(id) ON DELETE CASCADE,
+    channel_id text references channel(id) ON DELETE CASCADE not null ,
     title text,
     published timestamptz,
     content_id integer references content(id),
     website_link text,
     summary_text_id integer references text_content(id),
-    media_content_id integer references media_content(id)
+    media_object_id integer references media_object(id)
 );
 
 CREATE TABLE episode_category (
