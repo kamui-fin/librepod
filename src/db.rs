@@ -233,6 +233,7 @@ pub async fn get_episodes(pool: &PgPool) -> Result<Vec<DbPodcastEpisode>> {
         DbPodcastEpisode,
         r#"
         SELECT * FROM episode
+        ORDER BY published DESC
         "#,
     )
     .fetch_all(pool)
@@ -245,6 +246,7 @@ pub async fn get_episode(id: String, pool: &PgPool) -> Result<Option<DbPodcastEp
         DbPodcastEpisode,
         r#"
         SELECT * FROM episode WHERE id = $1
+        ORDER BY published DESC
         "#,
         id
     )

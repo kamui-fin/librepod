@@ -61,7 +61,7 @@ pub struct RssData {
 
 pub async fn get_rss_data(
     source: &str,
-    redis_conn: &mut redis::aio::Connection,
+    redis_conn: &mut redis::aio::ConnectionManager,
 ) -> Option<RssData> {
     // before request
     let client = Client::builder()
@@ -85,20 +85,17 @@ pub async fn get_rss_data(
     None
 }
 
-// develop a utility function such that
-// accepts: source
-// delta updates episodes table
 pub async fn delta_update_feed(pool: &PgPool, data: &RssData) -> anyhow::Result<()> {
     let recent_date = db::get_channel_last_published(pool, &data.channel.id).await?;
     let update_episodes = if let Some(recent_date) = recent_date {
         let slice = data.episodes.as_slice();
-        let low = slice.partition_point(|e| e.published > recent_date);
+        let low = slice.partition_point(|e| e.published <= recent_date);
         &slice[low..]
     } else {
         &data.episodes[..]
     };
 
-    let tx = pool.try_begin().await?.unwrap();
+    let tx = pool.begin().await?;
     for episode in update_episodes {
         db::add_episode(episode, pool).await?;
     }
@@ -108,15 +105,14 @@ pub async fn delta_update_feed(pool: &PgPool, data: &RssData) -> anyhow::Result<
 }
 
 pub async fn update_all_feeds(
-    sources: Vec<&str>,
-    redis_conn: &mut redis::aio::Connection,
+    redis_conn: &mut redis::aio::ConnectionManager,
     pool: &PgPool,
 ) -> anyhow::Result<()> {
-    for source in sources {
-        if let Some(rss_data) = get_rss_data(source, redis_conn).await {
+    let channels = db::get_channels(pool).await?;
+    for source in channels.iter().map(|s| s.rss_link.clone()) {
+        if let Some(rss_data) = get_rss_data(&source, redis_conn).await {
             delta_update_feed(pool, &rss_data).await?;
         }
     }
-
     Ok(())
 }

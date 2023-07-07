@@ -103,7 +103,7 @@ fn update_request_parts(request: RequestBuilder, parts: request::Parts) -> Reque
 
 pub async fn get_response_with_cache(
     request_builder: RequestBuilder,
-    con: &mut redis::aio::Connection,
+    con: &mut redis::aio::ConnectionManager,
     source: &str,
 ) -> CachedHttpResponse {
     let orig_request = request_builder.try_clone().unwrap().build().unwrap();
