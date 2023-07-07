@@ -1,10 +1,9 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use futures::future::join_all;
+use sqlx::PgPool;
 use sqlx::Row;
-use sqlx::{postgres::PgRow, FromRow, PgPool};
 
-use crate::feed::{PodcastChannel, PodcastEpisode};
-use feed_rs::model::{Category, Image, Person, Text};
+use crate::models::*;
 
 pub async fn delete_channel(id: String, pool: &PgPool) -> Result<bool> {
     let rows_affected = sqlx::query!(
@@ -50,7 +49,7 @@ pub async fn add_channel(channel: &PodcastChannel, pool: &PgPool) -> Result<bool
     "#,
             icon.uri,
             icon.title,
-            icon.link.clone().map(|link| link.href),
+            icon.website_link,
             icon.width.map(|w| w as i32),
             icon.height.map(|h| h as i32),
             icon.description
@@ -72,7 +71,7 @@ pub async fn add_channel(channel: &PodcastChannel, pool: &PgPool) -> Result<bool
     "#,
             logo.uri,
             logo.title,
-            logo.link.clone().map(|link| link.href),
+            logo.website_link,
             logo.width.map(|w| w as i32),
             logo.height.map(|h| h as i32),
             logo.description
@@ -199,93 +198,28 @@ pub async fn add_channel(channel: &PodcastChannel, pool: &PgPool) -> Result<bool
     Ok(rows_affected > 0)
 }
 
-// pub async fn get_channels() -> Result<Vec<PodcastChannel>> {}
-
-/* fn channel_from_row(row: PgRow) -> PodcastChannel {
-    let description = row.get("description");
-    PodcastChannel {
-        id: row.get("id"),
-        title: row.get("title"),
-        rss_link: row.get("rss_link"),
-        website_link: row.get("website_link"),
-        language: row.get("language"),
-        /* description: (),
-        logo: (),
-        icon: (),
-        authors: (),
-        contributors: (),
-        categories: (), */
-    }
-}
- */
-pub async fn get_channel(id: String, pool: &PgPool) -> Result<PgRow> {
-    let channel = sqlx::query(
+pub async fn get_channels(pool: &PgPool) -> Result<Vec<DbPodcastChannel>> {
+    let channels = sqlx::query_as!(
+        DbPodcastChannel,
         r#"
-        SELECT 
-            c.id,
-            c.title,
-            c.rss_link,
-            c.website_link,
-            c.language,
-            (
-                t.content,
-                t.content_type,
-                t.src
-            ) as "description",
-            (
-                l.uri,
-                l.title,
-                l.website_link,
-                l.width,
-                l.height,
-                l.description
-            ) as "logo",
-            (
-                i.uri,
-                i.title,
-                i.website_link,
-                i.width,
-                i.height,
-                i.description
-            ) as "icon",
-            (
-                ca.term,
-                ca.label
-            ) as "categories",
-            (
-                au.name,
-                au.uri,
-                au.email
-            ) as "authors",
-            (
-                co.name,
-                co.uri,
-                co.email
-            ) as "contributors"
-        FROM channel AS c
-
-        LEFT OUTER JOIN text_content AS t ON c.description_text_id = t.id
-
-        LEFT OUTER JOIN image AS l ON c.logo_id = l.id
-
-        LEFT OUTER JOIN image AS i ON c.icon_id = i.id
-
-        LEFT JOIN channel_category cc ON c.id = cc.channel_id
-        LEFT JOIN category ca ON cc.category_id = ca.id
-
-        LEFT JOIN channel_author cha ON c.id = cha.channel_id
-        LEFT JOIN person au ON cha.person_id = au.id
-
-        LEFT JOIN channel_contributor chc ON c.id = chc.channel_id
-        LEFT JOIN person co ON chc.person_id = co.id
-
-        WHERE c.id = $1
-    "#,
+        SELECT * FROM channel
+        "#,
     )
-    .bind(id)
-    .fetch_one(pool)
+    .fetch_all(pool)
     .await?;
+    Ok(channels)
+}
 
+pub async fn get_channel(id: String, pool: &PgPool) -> Result<Option<DbPodcastChannel>> {
+    let channel = sqlx::query_as!(
+        DbPodcastChannel,
+        r#"
+        SELECT * FROM channel WHERE id = $1
+        "#,
+        id
+    )
+    .fetch_optional(pool)
+    .await?;
     Ok(channel)
 }
 

@@ -1,46 +1,9 @@
 use crate::cache::{get_response_with_cache, CachedHttpResponse, HttpResponse};
-use chrono::{DateTime, Utc};
-use feed_rs::model::{Category, Content, Feed, Image, MediaObject, Person, Text};
+use crate::models::*;
+use feed_rs::model::Feed;
 use feed_rs::parser;
-use futures::prelude::*;
-use http_cache_semantics::CachePolicy;
-use redis::{AsyncCommands, Connection};
 use reqwest::Client;
-use std::{collections::HashMap, time::Duration};
-
-#[derive(Debug, Clone)]
-pub struct PodcastChannel {
-    pub id: String,
-    pub title: String,
-    pub rss_link: String,
-    pub website_link: String,
-
-    pub language: Option<String>,
-    pub description: Option<Text>,
-    pub logo: Option<Image>,
-    pub icon: Option<Image>,
-
-    pub authors: Vec<Person>,
-    pub contributors: Vec<Person>,
-    pub categories: Vec<Category>,
-}
-
-#[derive(Debug)]
-pub struct PodcastEpisode {
-    pub source_id: String,
-
-    pub id: String,
-    pub title: String,
-    pub website_link: String,
-
-    pub published: Option<DateTime<Utc>>,
-    pub content: Option<Content>,
-    pub summary: Option<Text>,
-
-    pub authors: Vec<Person>,
-    pub categories: Vec<Category>,
-    pub media: MediaObject,
-}
+use std::time::Duration;
 
 fn get_episode_data(feed: &Feed, rss_link: String) -> Vec<PodcastEpisode> {
     let source = get_channel_data(feed, rss_link);
@@ -56,11 +19,16 @@ fn get_episode_data(feed: &Feed, rss_link: String) -> Vec<PodcastEpisode> {
                         id: item.id.clone(),
                         title: item.title.clone().unwrap().content,
                         published: item.published,
-                        authors: item.authors.clone(),
-                        content: item.content.clone(),
+                        authors: item.authors.clone().into_iter().map(Into::into).collect(),
+                        content: item.content.clone().into(),
                         website_link: item.links.clone()[0].href.clone(),
-                        summary: item.summary.clone(),
-                        categories: item.categories.clone(),
+                        summary: item.summary.clone().map(Into::into),
+                        categories: item
+                            .categories
+                            .clone()
+                            .into_iter()
+                            .map(Into::into)
+                            .collect(),
                         media: item.media.get(0).unwrap().clone(),
                     })
                 }
@@ -79,13 +47,23 @@ pub fn get_channel_data(feed: &Feed, rss_link: String) -> Option<PodcastChannel>
             id: feed.id.clone(),
             title: feed.title.clone().unwrap().content,
             website_link: feed.links.clone()[0].href.clone(),
-            authors: feed.authors.clone(),
-            contributors: feed.contributors.clone(),
-            description: feed.description.clone(),
-            categories: feed.categories.clone(),
             language: feed.language.clone(),
-            logo: feed.logo.clone(),
-            icon: feed.icon.clone(),
+            authors: feed.authors.clone().into_iter().map(Into::into).collect(),
+            contributors: feed
+                .contributors
+                .clone()
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+            description: feed.description.clone().map(Into::into),
+            categories: feed
+                .categories
+                .clone()
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+            logo: feed.logo.clone().map(Into::into),
+            icon: feed.icon.clone().map(Into::into),
             rss_link,
         })
     }
