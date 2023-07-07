@@ -1,42 +1,37 @@
 use crate::cache::{get_response_with_cache, CachedHttpResponse, HttpResponse};
-use crate::models::*;
+use crate::{db, models::*};
 use feed_rs::model::Feed;
 use feed_rs::parser;
 use reqwest::Client;
+use sqlx::PgPool;
 use std::time::Duration;
 
-fn get_episode_data(feed: &Feed, rss_link: String) -> Vec<PodcastEpisode> {
-    let source = get_channel_data(feed, rss_link);
-    if let Some(source) = source {
-        feed.entries
-            .iter()
-            .filter_map(|item| {
-                if item.title.is_none() || item.media.is_empty() || item.links.is_empty() {
-                    None
-                } else {
-                    Some(PodcastEpisode {
-                        source_id: source.id.clone(),
-                        id: item.id.clone(),
-                        title: item.title.clone().unwrap().content,
-                        published: item.published,
-                        authors: item.authors.clone().into_iter().map(Into::into).collect(),
-                        content: item.content.clone().into(),
-                        website_link: item.links.clone()[0].href.clone(),
-                        summary: item.summary.clone().map(Into::into),
-                        categories: item
-                            .categories
-                            .clone()
-                            .into_iter()
-                            .map(Into::into)
-                            .collect(),
-                        media: item.media.get(0).unwrap().clone(),
-                    })
-                }
-            })
-            .collect()
-    } else {
-        vec![]
-    }
+fn get_episode_data(feed: &Feed, source: &PodcastChannel, rss_link: String) -> Vec<PodcastEpisode> {
+    feed.entries
+        .iter()
+        .filter_map(|item| {
+            if item.title.is_none()
+                || item.media.is_empty()
+                || item.links.is_empty()
+                || item.published.is_none()
+            {
+                None
+            } else {
+                Some(PodcastEpisode {
+                    source_id: source.id.clone(),
+                    id: item.id.clone(),
+                    title: item.title.clone().unwrap().content,
+                    published: item.published.unwrap(),
+                    authors: item.authors.clone(),
+                    content: item.content.clone(),
+                    website_link: item.links.clone()[0].href.clone(),
+                    summary: item.summary.clone(),
+                    categories: item.categories.clone(),
+                    media: item.media.get(0).unwrap().clone(),
+                })
+            }
+        })
+        .collect()
 }
 
 pub fn get_channel_data(feed: &Feed, rss_link: String) -> Option<PodcastChannel> {
@@ -48,31 +43,26 @@ pub fn get_channel_data(feed: &Feed, rss_link: String) -> Option<PodcastChannel>
             title: feed.title.clone().unwrap().content,
             website_link: feed.links.clone()[0].href.clone(),
             language: feed.language.clone(),
-            authors: feed.authors.clone().into_iter().map(Into::into).collect(),
-            contributors: feed
-                .contributors
-                .clone()
-                .into_iter()
-                .map(Into::into)
-                .collect(),
-            description: feed.description.clone().map(Into::into),
-            categories: feed
-                .categories
-                .clone()
-                .into_iter()
-                .map(Into::into)
-                .collect(),
-            logo: feed.logo.clone().map(Into::into),
-            icon: feed.icon.clone().map(Into::into),
+            authors: feed.authors.clone(),
+            contributors: feed.contributors.clone(),
+            description: feed.description.clone(),
+            categories: feed.categories.clone(),
+            logo: feed.logo.clone(),
+            icon: feed.icon.clone(),
             rss_link,
         })
     }
 }
 
-pub async fn get_rss_episodes(
+pub struct RssData {
+    pub channel: PodcastChannel,
+    pub episodes: Vec<PodcastEpisode>,
+}
+
+pub async fn get_rss_data(
     source: &str,
     redis_conn: &mut redis::aio::Connection,
-) -> Vec<PodcastEpisode> {
+) -> Option<RssData> {
     // before request
     let client = Client::builder()
             .user_agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
@@ -86,43 +76,47 @@ pub async fn get_rss_episodes(
     // only fetch feeds not cached
     if let CachedHttpResponse::Miss(http_response) = cached_response {
         let feed = parser::parse(&http_response.body[..]).unwrap();
-        get_episode_data(&feed, source.to_string())
-    } else {
-        vec![]
+        if let Some(channel) = get_channel_data(&feed, source.into()) {
+            let mut episodes = get_episode_data(&feed, &channel, source.to_string());
+            episodes.sort_by_key(|ep| ep.published);
+            return Some(RssData { channel, episodes });
+        }
     }
+    None
 }
 
-pub async fn get_rss_source(source: &str) -> Option<PodcastChannel> {
-    let client = Client::builder()
-            .user_agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
-            .gzip(true)
-            .deflate(true)
-            .brotli(true)
-            .timeout(Duration::from_secs(60))
-    .build().unwrap();
-    let response = client
-        .get(source)
-        .send()
-        .await
-        .unwrap()
-        .bytes()
-        .await
-        .unwrap();
-    let feed = parser::parse(&response[..]).unwrap();
-    get_channel_data(&feed, source.to_string())
+// develop a utility function such that
+// accepts: source
+// delta updates episodes table
+pub async fn delta_update_feed(pool: &PgPool, data: &RssData) -> anyhow::Result<()> {
+    let recent_date = db::get_channel_last_published(pool, &data.channel.id).await?;
+    let update_episodes = if let Some(recent_date) = recent_date {
+        let slice = data.episodes.as_slice();
+        let low = slice.partition_point(|e| e.published > recent_date);
+        &slice[low..]
+    } else {
+        &data.episodes[..]
+    };
+
+    let tx = pool.try_begin().await?.unwrap();
+    for episode in update_episodes {
+        db::add_episode(episode, pool).await?;
+    }
+    tx.commit().await?;
+
+    Ok(())
 }
 
-pub async fn get_feed(
+pub async fn update_all_feeds(
     sources: Vec<&str>,
     redis_conn: &mut redis::aio::Connection,
-) -> Vec<PodcastEpisode> {
-    let mut feed = vec![];
+    pool: &PgPool,
+) -> anyhow::Result<()> {
     for source in sources {
-        feed.extend(get_rss_episodes(source, redis_conn).await);
+        if let Some(rss_data) = get_rss_data(source, redis_conn).await {
+            delta_update_feed(pool, &rss_data).await?;
+        }
     }
 
-    feed.sort_by_key(|ep| ep.published);
-    feed.reverse();
-
-    feed
+    Ok(())
 }

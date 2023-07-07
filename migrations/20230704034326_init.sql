@@ -80,8 +80,8 @@ CREATE TABLE media_object (
 CREATE TABLE episode (
     id text primary key not null,
     channel_id text references channel(id) ON DELETE CASCADE not null ,
+    published timestamptz not null,
     title text,
-    published timestamptz,
     content_id integer references content(id),
     website_link text,
     summary_text_id integer references text_content(id),

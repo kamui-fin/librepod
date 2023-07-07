@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use feed_rs::model::{Category, Content, Image, MediaObject, Person, Text};
+use serde::Serialize;
 
 #[derive(Debug, Clone, Default)]
 pub struct PodcastChannel {
@@ -21,8 +22,8 @@ pub struct PodcastEpisode {
     pub source_id: String,
     pub id: String,
     pub title: String,
+    pub published: DateTime<Utc>,
     pub website_link: String,
-    pub published: Option<DateTime<Utc>>,
     pub content: Option<Content>,
     pub summary: Option<Text>,
     pub authors: Vec<Person>,
@@ -32,19 +33,19 @@ pub struct PodcastEpisode {
 
 // Db result structs
 // SQLx limitation: just high-level barebones sqlx result, nested field population required
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct DbPodcastEpisode {
     pub id: String,
     pub channel_id: String,
     pub title: String,
     pub website_link: String,
-    pub published: Option<DateTime<Utc>>,
+    pub published: DateTime<Utc>,
     pub content_id: Option<i32>,
     pub summary_text_id: Option<i32>,
     pub media_object_id: Option<i32>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct DbPodcastChannel {
     pub id: String,
     pub rss_link: String,

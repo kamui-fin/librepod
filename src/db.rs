@@ -1,6 +1,8 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Result};
+use chrono::DateTime;
+use chrono::Utc;
 use futures::future::join_all;
 use sqlx::postgres::types::PgInterval;
 use sqlx::PgPool;
@@ -398,4 +400,26 @@ pub async fn add_episode(episode: &PodcastEpisode, pool: &PgPool) -> Result<bool
     }
 
     Ok(rows_affected > 0)
+}
+
+pub async fn get_channel_last_published(
+    pool: &PgPool,
+    channel_id: &str,
+) -> Result<Option<DateTime<Utc>>> {
+    let last_published = sqlx::query!(
+        r#"
+        SELECT MAX(published) FROM episode
+        WHERE channel_id = $1
+        GROUP BY channel_id
+    "#,
+        channel_id
+    )
+    .fetch_optional(pool)
+    .await?;
+
+    if let Some(record) = last_published {
+        Ok(record.max)
+    } else {
+        Ok(None)
+    }
 }
