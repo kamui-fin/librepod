@@ -1,28 +1,20 @@
-use crate::error::ApiError;
-use argon2::Config as ArgonConfig;
-use argon2::Variant::Argon2id;
+use crate::{
+    error::{ApiError, ApiResult},
+    models::User,
+};
+use argon2::{Config as ArgonConfig, Variant::Argon2id};
 use chrono::{DateTime, Utc};
+use lazy_static::lazy_static;
 use rand::RngCore;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sqlx::Pool;
+use uuid::Uuid;
 use validator::{Validate, ValidationError};
-
-use crate::error::ApiResult;
 
 lazy_static! {
     static ref RE_USERNAME: Regex = Regex::new(r"^[a-zA-Z0-9_-]{3,20}$").expect("Invalid regex");
     static ref RE_PASS: Regex = Regex::new(r"^*{6,}$").expect("Invalid regex");
-}
-
-#[derive(Debug)]
-pub struct User {
-    pub user_id: i32,
-    pub username: String,
-    pub email: String,
-    pub password: String,
-    pub salt: Vec<u8>,
-    pub created_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Validate, Serialize, Deserialize)]
@@ -74,7 +66,7 @@ pub async fn register_user(creds: &SignUpCreds, pool: &Pool<sqlx::Postgres>) -> 
     }
 
     let exist_user = sqlx::query!(
-        "SELECT user_id FROM users WHERE username = $1 LIMIT 1",
+        "SELECT id FROM account WHERE name = $1 LIMIT 1",
         creds.username
     )
     .fetch_one(pool)
@@ -90,23 +82,27 @@ pub async fn register_user(creds: &SignUpCreds, pool: &Pool<sqlx::Postgres>) -> 
     let hashed_passwd =
         hash_password(&creds.password, &salt).map_err(|_| ApiError::InternalServerError)?;
 
-    sqlx::query_as!(
+    let id = Uuid::new_v4();
+
+    let result = sqlx::query_as!(
         User,
-        "INSERT INTO users(username, email, password, salt) VALUES ($1, $2, $3, $4) RETURNING *",
+        "INSERT INTO account(id, name, email, password, salt) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+        id,
         creds.username,
         creds.email,
         hashed_passwd,
         salt.to_vec()
     )
     .fetch_one(pool)
-    .await
-    .map_err(|_| ApiError::InternalServerError)
+    .await;
+
+    result.map_err(|_| ApiError::InternalServerError)
 }
 
 pub async fn login_user(creds: &LoginCreds, pool: &Pool<sqlx::Postgres>) -> ApiResult<User> {
     let exist_user: User = sqlx::query_as!(
         User,
-        "SELECT * FROM users WHERE username = $1 OR email = $1 LIMIT 1",
+        "SELECT * FROM account WHERE name = $1 OR email = $1 LIMIT 1",
         creds.username_or_email
     )
     .fetch_one(pool)

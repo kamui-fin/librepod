@@ -1,7 +1,7 @@
 CREATE TABLE text_content (
     id serial primary key not null,
     content text not null,
-    content_type text,
+    content_type text not null,
     src text
 );
 
@@ -10,8 +10,8 @@ CREATE TABLE image (
     uri text not null,
     title text,
     website_link text,
-    width text,
-    height text,
+    width integer,
+    height integer,
     description text
 );
 
@@ -32,7 +32,7 @@ CREATE TABLE channel (
     id text primary key not null,
     rss_link text not null,
     website_link text not null,
-    title text,
+    title text not null,
     description_text_id integer references text_content(id),
     language text,
     logo_id integer references image(id),
@@ -81,9 +81,9 @@ CREATE TABLE episode (
     id text primary key not null,
     channel_id text references channel(id) ON DELETE CASCADE not null ,
     published timestamptz not null,
-    title text,
+    title text not null,
+    website_link text not null,
     content_id integer references content(id),
-    website_link text,
     summary_text_id integer references text_content(id),
     media_object_id integer references media_object(id)
 );

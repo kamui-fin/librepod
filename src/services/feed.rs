@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use chrono::DateTime;
 use chrono::Utc;
 use futures::future::join_all;
@@ -8,7 +8,64 @@ use sqlx::postgres::types::PgInterval;
 use sqlx::PgPool;
 use sqlx::Row;
 
+use crate::cache::get_response_with_cache;
+use crate::cache::CachedHttpResponse;
 use crate::models::*;
+
+pub async fn get_rss_data(
+    source: &str,
+    redis_conn: &mut redis::aio::ConnectionManager,
+) -> Option<RssData> {
+    // before request
+    let client = reqwest::Client::builder()
+            .user_agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
+            .gzip(true)
+            .deflate(true)
+            .brotli(true)
+            .timeout(Duration::from_secs(60))
+    .build().unwrap();
+    let request = client.get(source);
+    let cached_response = get_response_with_cache(request, redis_conn, source).await;
+    // only fetch feeds not cached
+    if let CachedHttpResponse::Miss(http_response) = cached_response {
+        let feed = feed_rs::parser::parse(&http_response.body[..]).unwrap();
+        RssData::from_feed(&feed, source.to_string())
+    } else {
+        None
+    }
+}
+
+pub async fn delta_update_feed(pool: &PgPool, data: &RssData) -> anyhow::Result<()> {
+    let recent_date = get_channel_last_published(pool, &data.channel.id).await?;
+    let update_episodes = if let Some(recent_date) = recent_date {
+        let slice = data.episodes.as_slice();
+        let low = slice.partition_point(|e| e.published <= recent_date);
+        &slice[low..]
+    } else {
+        &data.episodes[..]
+    };
+
+    let tx = pool.begin().await?;
+    for episode in update_episodes {
+        add_episode(episode, pool).await?;
+    }
+    tx.commit().await?;
+
+    Ok(())
+}
+
+pub async fn update_all_feeds(
+    redis_conn: &mut redis::aio::ConnectionManager,
+    pool: &PgPool,
+) -> anyhow::Result<()> {
+    let channels = get_channels(pool).await?;
+    for source in channels.iter().map(|s| s.rss_link.clone()) {
+        if let Some(rss_data) = get_rss_data(&source, redis_conn).await {
+            delta_update_feed(pool, &rss_data).await?;
+        }
+    }
+    Ok(())
+}
 
 pub async fn delete_channel(id: String, pool: &PgPool) -> Result<bool> {
     let rows_affected = sqlx::query!(
