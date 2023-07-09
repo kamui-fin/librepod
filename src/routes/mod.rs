@@ -35,9 +35,7 @@ pub fn build_router(
         .route("/logout", put(logout_user))
         .route_layer(RequireAuth::login())
         .route("/register", put(register_user))
-        .route("/login", put(login_user))
-
-    ;
+        .route("/login", put(login_user));
 
     Router::new()
         .route("/", get(|| async { "Hello, World!" }))

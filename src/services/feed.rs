@@ -7,6 +7,7 @@ use futures::future::join_all;
 use sqlx::postgres::types::PgInterval;
 use sqlx::PgPool;
 use sqlx::Row;
+use uuid::Uuid;
 
 use crate::cache::get_response_with_cache;
 use crate::cache::CachedHttpResponse;
@@ -67,13 +68,54 @@ pub async fn update_all_feeds(
     Ok(())
 }
 
-pub async fn delete_channel(id: String, pool: &PgPool) -> Result<bool> {
+pub async fn delete_channel(id: &str, pool: &PgPool) -> Result<bool> {
     let rows_affected = sqlx::query!(
         r#"
         DELETE FROM channel
         WHERE id = $1
     "#,
         id
+    )
+    .execute(pool)
+    .await?
+    .rows_affected();
+
+    Ok(rows_affected > 0)
+}
+
+pub async fn get_subscriptions(pool: &PgPool, user_id: Uuid) -> Result<Vec<DbPodcastChannel>> {
+    let channels = sqlx::query_as!(
+        DbPodcastChannel,
+        r#"
+        SELECT channel.* FROM user_subscriptions
+        LEFT JOIN channel ON channel.id = channel_id
+        WHERE user_id = $1
+        "#,
+        user_id
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(channels)
+}
+
+pub async fn add_subscription(user_id: Uuid, channel_id: &str, pool: &PgPool) -> Result<bool> {
+    let rows_affected = sqlx::query!(
+        "INSERT INTO user_subscriptions VALUES ($1, $2)",
+        user_id,
+        channel_id
+    )
+    .execute(pool)
+    .await?
+    .rows_affected();
+
+    Ok(rows_affected > 0)
+}
+
+pub async fn delete_subscription(user_id: Uuid, channel_id: &str, pool: &PgPool) -> Result<bool> {
+    let rows_affected = sqlx::query!(
+        "DELETE FROM user_subscriptions WHERE user_id = $1 AND channel_id = $2",
+        user_id,
+        channel_id
     )
     .execute(pool)
     .await?
@@ -272,7 +314,7 @@ pub async fn get_channels(pool: &PgPool) -> Result<Vec<DbPodcastChannel>> {
     Ok(channels)
 }
 
-pub async fn get_channel(id: String, pool: &PgPool) -> Result<Option<DbPodcastChannel>> {
+pub async fn get_channel(id: &str, pool: &PgPool) -> Result<Option<DbPodcastChannel>> {
     let channel = sqlx::query_as!(
         DbPodcastChannel,
         r#"
@@ -283,6 +325,25 @@ pub async fn get_channel(id: String, pool: &PgPool) -> Result<Option<DbPodcastCh
     .fetch_optional(pool)
     .await?;
     Ok(channel)
+}
+
+pub async fn get_subscription_episodes(
+    user_id: Uuid,
+    pool: &PgPool,
+) -> Result<Vec<DbPodcastEpisode>> {
+    let episodes = sqlx::query_as!(
+        DbPodcastEpisode,
+        r#"
+        SELECT episode.* FROM user_subscriptions
+        LEFT JOIN episode ON episode.channel_id = user_subscriptions.channel_id
+        WHERE user_id = $1
+        ORDER BY published DESC
+        "#,
+        user_id
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(episodes)
 }
 
 pub async fn get_episodes(pool: &PgPool) -> Result<Vec<DbPodcastEpisode>> {
@@ -298,7 +359,7 @@ pub async fn get_episodes(pool: &PgPool) -> Result<Vec<DbPodcastEpisode>> {
     Ok(episodes)
 }
 
-pub async fn get_episode(id: String, pool: &PgPool) -> Result<Option<DbPodcastEpisode>> {
+pub async fn get_episode(id: &str, pool: &PgPool) -> Result<Option<DbPodcastEpisode>> {
     let episode = sqlx::query_as!(
         DbPodcastEpisode,
         r#"
