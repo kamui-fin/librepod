@@ -55,7 +55,7 @@ pub async fn retrieve_feed(
     Extension(user): Extension<User>,
     State(state): State<AppContext>,
 ) -> Result<impl IntoResponse, AppError> {
-    let episodes = feed::get_subscription_episodes(user.id, & state.pool).await?;
+    let episodes = feed::get_subscription_episodes(user.id, &state.pool).await?;
     Ok(Json(episodes))
 }
 
