@@ -38,3 +38,4 @@ axum-login = { version = "0.5.0", features = ["sqlx", "postgres"] }
 async-redis-session = "0.2.2"
 tracing = "0.1"
 tracing-subscriber = "0.3"
+tower-http = { version = "0.4.1", features = ["cors", "trace"]}

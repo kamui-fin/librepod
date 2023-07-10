@@ -1,0 +1,15 @@
+.btn {
+    background: $accent-main;
+    padding: 0.9rem 1.3rem;
+    border: none;
+    outline: none;
+    border-radius: 0.1875rem;
+    color: $fg-main;
+    font-weight: normal;
+
+    &:hover {
+        cursor: pointer;
+        opacity: 90%;
+        transition: all 200ms ease-in-out;
+    }
+}

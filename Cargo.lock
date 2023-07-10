@@ -1618,6 +1618,7 @@ dependencies = [
  "sqlx",
  "tokio",
  "tokio-cron-scheduler",
+ "tower-http 0.4.1",
  "tracing",
  "tracing-subscriber",
  "url",
@@ -2944,6 +2945,7 @@ dependencies = [
  "pin-project-lite",
  "tower-layer",
  "tower-service",
+ "tracing",
 ]
 
 [[package]]

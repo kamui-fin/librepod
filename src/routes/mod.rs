@@ -15,14 +15,11 @@ use uuid::Uuid;
 
 type RequireAuth = RequireAuthorizationLayer<Uuid, User>;
 
-pub fn build_router(
-    session_layer: SessionLayer<RedisSessionStore>,
-    auth_layer: AuthLayer<SqlxStore<Pool<Postgres>, User>, Uuid, User>,
-) -> Router<AppContext> {
+pub fn build_router() -> Router<AppContext> {
     let channel_routes = Router::new().route(
         "/",
-        get(get_channel_list)
-            .post(add_channel)
+        get(get_subscriptions)
+            .post(add_subscription)
             .delete(delete_channel),
     );
 
@@ -42,6 +39,4 @@ pub fn build_router(
         .nest("/channel", channel_routes)
         .nest("/feed", feed_routes)
         .nest("/auth", auth_routes)
-        .layer(auth_layer)
-        .layer(session_layer)
 }

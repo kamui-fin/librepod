@@ -19,6 +19,8 @@ use std::{
     time::Duration,
 };
 use tokio_cron_scheduler::{Job, JobScheduler};
+use tower_http::cors::{Any, CorsLayer};
+use tower_http::trace::TraceLayer;
 use tracing::info;
 use tracing_subscriber;
 use uuid::Uuid;
@@ -65,8 +67,14 @@ async fn start_server() -> Result<()> {
         .with_query("SELECT * FROM account WHERE id = $1");
     let auth_layer = AuthLayer::new(user_store, &secret);
 
-    let app = build_router(session_layer, auth_layer)
+    let cors = CorsLayer::permissive();
+
+    let app = build_router()
         .with_state(state)
+        .layer(auth_layer)
+        .layer(session_layer)
+        .layer(cors)
+        .layer(TraceLayer::new_for_http())
         .into_make_service();
 
     axum::Server::bind(&app_url.parse().unwrap())
