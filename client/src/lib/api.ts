@@ -5,10 +5,10 @@ export const axios = Axios.create({
 })
 
 axios.interceptors.response.use(
-    function (response) {
+    function(response) {
         return response
     },
-    function (error) {
+    function(error) {
         if (error.status === 401) {
             localStorage.removeItem("user")
         }

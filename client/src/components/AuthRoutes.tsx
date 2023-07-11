@@ -10,7 +10,7 @@ export const ProtectedRoute = ({ children }) => {
 }
 
 export const UnprotectedRoute = ({ children }) => {
-    const {user} = useAuth()
+    const { user } = useAuth()
     if (user) {
         return <Navigate to="/" />
     }
