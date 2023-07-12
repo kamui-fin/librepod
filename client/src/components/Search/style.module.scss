@@ -1,0 +1,22 @@
+.container {
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    background: #2d343f;
+    border-radius: 0.31rem;
+    height: 2.5rem;
+    padding-left: 1rem;
+    color: #b8c0cc;
+
+    svg {
+        path {
+            stroke: #b8c0cc;
+        }
+    }
+}
+
+.input {
+    border: none;
+    outline: none;
+    background: #2d343f;
+}

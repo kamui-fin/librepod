@@ -31,7 +31,7 @@ pub async fn add_subscription(
         .await
         .ok_or(anyhow!("could not fetch feed"))?;
 
-    if let None = feed::get_channel(&data.channel.id, &state.pool).await? {
+    if (feed::get_channel(&data.channel.id, &state.pool).await?).is_none() {
         feed::add_channel(&data.channel, &state.pool).await?;
     }
     // also import missing episodes since you already took the time to fetch RSS

@@ -6,39 +6,30 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom"
 import RegisterPage from "./pages/register"
 import LoginPage from "./pages/login"
 import { ProtectedRoute, UnprotectedRoute } from "./components/AuthRoutes"
-import Layout from "./components/Layout"
+import AuthLayout from "./components/AuthLayout"
 import HomePage from "./pages/home"
 import FeedPage from "./pages/feed"
-import ChannelsPage from "./pages/channels"
+import SubscriptionsPage from "./pages/subscriptions"
 import SettingsPage from "./pages/settings"
 import HistoryPage from "./pages/history"
 
-
 const rootPaths = [
     {
-        element: (
-            <FeedPage />
-        ),
-        index: true
+        element: <FeedPage />,
+        index: true,
     },
     {
         path: "/subscriptions",
-        element: (
-            <ChannelsPage />
-        )
+        element: <SubscriptionsPage />,
     },
     {
         path: "/history",
-        element: (
-            <HistoryPage />
-        )
+        element: <HistoryPage />,
     },
     {
         path: "/settings",
-        element: (
-            <SettingsPage />
-        )
-    }
+        element: <SettingsPage />,
+    },
 ]
 
 const router = createBrowserRouter([
@@ -46,9 +37,9 @@ const router = createBrowserRouter([
         path: "/",
         element: (
             <ProtectedRoute>
-                <Layout>
+                <AuthLayout>
                     <HomePage />
-                </Layout>
+                </AuthLayout>
             </ProtectedRoute>
         ),
         children: rootPaths,
@@ -57,9 +48,9 @@ const router = createBrowserRouter([
         path: "/register",
         element: (
             <UnprotectedRoute>
-                <Layout>
+                <AuthLayout>
                     <RegisterPage />
-                </Layout >
+                </AuthLayout>
             </UnprotectedRoute>
         ),
     },
@@ -67,9 +58,9 @@ const router = createBrowserRouter([
         path: "/login",
         element: (
             <UnprotectedRoute>
-                <Layout>
+                <AuthLayout>
                     <LoginPage />
-                </Layout>
+                </AuthLayout>
             </UnprotectedRoute>
         ),
     },

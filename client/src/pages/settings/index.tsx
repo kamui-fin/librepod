@@ -1,10 +1,17 @@
+import Layout from "../../components/Layout"
 import styles from "./style.module.scss"
+import { GrCircleInformation } from "react-icons/gr"
 
 const SettingsPage = () => {
     return (
-        <main>
+        <Layout>
             <h1>Settings</h1>
-        </main>
+            <hr className={styles.logoDivider} />
+            <div className={styles.notImplemented}>
+                <GrCircleInformation />
+                <span>Coming soon!</span>
+            </div>
+        </Layout>
     )
 }
 

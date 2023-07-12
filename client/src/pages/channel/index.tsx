@@ -1,6 +1,6 @@
 import styles from "./style.module.scss"
 
-const ChannelsPage = () => {
+const ChannelPage = () => {
     return (
         <main>
             <h1>Subscriptions</h1>
@@ -8,4 +8,4 @@ const ChannelsPage = () => {
     )
 }
 
-export default ChannelsPage
+export default ChannelPage

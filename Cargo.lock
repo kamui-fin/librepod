@@ -1607,6 +1607,7 @@ dependencies = [
  "http-cache-semantics",
  "http-serde",
  "lazy_static",
+ "mime",
  "rand",
  "redis 0.23.0",
  "regex",

@@ -3,6 +3,11 @@ use std::time::Duration;
 use anyhow::Result;
 use chrono::DateTime;
 use chrono::Utc;
+use feed_rs::model;
+use feed_rs::model::Image;
+use feed_rs::model::Link;
+use feed_rs::model::Text;
+use futures::future;
 use futures::future::join_all;
 use sqlx::postgres::types::PgInterval;
 use sqlx::PgPool;
@@ -83,7 +88,7 @@ pub async fn delete_channel(id: &str, pool: &PgPool) -> Result<bool> {
     Ok(rows_affected > 0)
 }
 
-pub async fn get_subscriptions(pool: &PgPool, user_id: Uuid) -> Result<Vec<DbPodcastChannel>> {
+pub async fn get_subscriptions(pool: &PgPool, user_id: Uuid) -> Result<Vec<PodcastChannel>> {
     let channels = sqlx::query_as!(
         DbPodcastChannel,
         r#"
@@ -95,6 +100,9 @@ pub async fn get_subscriptions(pool: &PgPool, user_id: Uuid) -> Result<Vec<DbPod
     )
     .fetch_all(pool)
     .await?;
+    let channels = future::try_join_all(channels.into_iter().map(|c| expand_db_channel(c, pool)))
+        .await
+        .unwrap();
     Ok(channels)
 }
 
@@ -302,7 +310,7 @@ pub async fn add_channel(channel: &PodcastChannel, pool: &PgPool) -> Result<bool
     Ok(rows_affected > 0)
 }
 
-pub async fn get_channels(pool: &PgPool) -> Result<Vec<DbPodcastChannel>> {
+pub async fn get_channels(pool: &PgPool) -> Result<Vec<PodcastChannel>> {
     let channels = sqlx::query_as!(
         DbPodcastChannel,
         r#"
@@ -311,10 +319,15 @@ pub async fn get_channels(pool: &PgPool) -> Result<Vec<DbPodcastChannel>> {
     )
     .fetch_all(pool)
     .await?;
+
+    let channels = future::try_join_all(channels.into_iter().map(|c| expand_db_channel(c, pool)))
+        .await
+        .unwrap();
+
     Ok(channels)
 }
 
-pub async fn get_channel(id: &str, pool: &PgPool) -> Result<Option<DbPodcastChannel>> {
+pub async fn get_channel(id: &str, pool: &PgPool) -> Result<Option<PodcastChannel>> {
     let channel = sqlx::query_as!(
         DbPodcastChannel,
         r#"
@@ -324,6 +337,114 @@ pub async fn get_channel(id: &str, pool: &PgPool) -> Result<Option<DbPodcastChan
     )
     .fetch_optional(pool)
     .await?;
+    if let Some(channel) = channel {
+        Ok(Some(expand_db_channel(channel, pool).await?))
+    } else {
+        Ok(None)
+    }
+}
+
+fn link_from_href(href: String) -> Link {
+    Link {
+        href,
+        rel: None,
+        media_type: None,
+        href_lang: None,
+        title: None,
+        length: None,
+    }
+}
+
+pub async fn expand_db_channel(channel: DbPodcastChannel, pool: &PgPool) -> Result<PodcastChannel> {
+    let DbPodcastChannel {
+        id,
+        rss_link,
+        website_link,
+        title,
+        language,
+        description_text_id,
+        logo_id,
+        icon_id,
+    } = channel;
+    let description = sqlx::query!(
+        "SELECT * FROM text_content WHERE id = $1",
+        description_text_id
+    )
+    .map(|row| Text {
+        src: row.src,
+        content: row.content,
+        content_type: row.content_type.parse().unwrap(),
+    })
+    .fetch_optional(pool)
+    .await?;
+    let logo = sqlx::query!("SELECT * FROM image WHERE id = $1", logo_id)
+        .map(|row| Image {
+            uri: row.uri,
+            title: row.title,
+            link: row.website_link.map(link_from_href),
+            width: row.width.map(|n| n as u32),
+            height: row.height.map(|n| n as u32),
+            description: row.description,
+        })
+        .fetch_optional(pool)
+        .await?;
+    let icon = sqlx::query!("SELECT * FROM image WHERE id = $1", icon_id)
+        .map(|row| Image {
+            uri: row.uri,
+            title: row.title,
+            link: row.website_link.map(link_from_href),
+            width: row.width.map(|n| n as u32),
+            height: row.height.map(|n| n as u32),
+            description: row.description,
+        })
+        .fetch_optional(pool)
+        .await?;
+    let authors = sqlx::query_as!(
+        model::Person,
+        r#"
+        SELECT name, uri, email FROM person
+        LEFT JOIN channel_author ON channel_author.person_id = person.id
+        WHERE channel_author.channel_id = $1
+        "#,
+        id
+    )
+    .fetch_all(pool)
+    .await?;
+    let contributors = sqlx::query_as!(
+        model::Person,
+        r#"
+        SELECT name, uri, email FROM person
+        LEFT JOIN channel_contributor ON channel_contributor.person_id = person.id
+        WHERE channel_contributor.channel_id = $1
+        "#,
+        id
+    )
+    .fetch_all(pool)
+    .await?;
+    let categories = sqlx::query_as!(
+        model::Category,
+        r#"
+        SELECT term, label, null as scheme FROM category
+        LEFT JOIN channel_category ON channel_category.category_id = category.id
+        WHERE channel_category.channel_id = $1
+        "#,
+        id
+    )
+    .fetch_all(pool)
+    .await?;
+    let channel = PodcastChannel {
+        id,
+        title,
+        rss_link,
+        website_link,
+        language,
+        description,
+        logo,
+        icon,
+        authors,
+        contributors,
+        categories,
+    };
     Ok(channel)
 }
 
