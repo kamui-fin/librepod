@@ -1,0 +1,66 @@
+.listItem {
+    border-radius: 0.9375rem;
+    background: $bg-secondary;
+    padding: 1.2rem 1.5rem;
+    gap: 1.5rem;
+
+    display: flex;
+    align-items: center;
+
+    .meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        flex-grow: 1;
+    }
+
+    .title {
+        margin: 0;
+        padding: 0;
+        color: #fff;
+        font-weight: 500;
+    }
+
+    .desc {
+        color: #b8c0cc;
+        font-size: 0.9125rem;
+        font-weight: 400;
+        line-height: 1.27rem;
+        margin: 0;
+    }
+
+    .channel {
+        color: $accent-secondary;
+    }
+
+    .image img {
+        width: 5.0625rem;
+        height: 5.0625rem;
+        border-radius: 0.8125rem;
+    }
+
+    .play button {
+        min-width: 7rem;
+        border-radius: 0.875rem;
+        background: $bg-main;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        padding: 0.7rem 1rem;
+        outline: none;
+        border: none;
+        color: $fg-main;
+
+        display: flex;
+        gap: 0.7rem;
+
+        span {
+            font-size: 0.9125rem;
+            font-weight: 400;
+        }
+
+        svg {
+            path {
+                fill: $accent-main;
+            }
+        }
+    }
+}

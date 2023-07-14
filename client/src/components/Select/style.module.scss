@@ -1,0 +1,38 @@
+.container {
+    display: flex;
+}
+
+.iconBox {
+    display: flex;
+    background: $bg-secondary;
+    justify-content: center;
+    align-items: center;
+    padding: 0 .5rem;
+
+    svg {
+        fill: #B8C0CC;
+        width: 30px;
+    }
+
+    border-radius: 8px 0 0 8px;
+}
+
+.select {
+    /* Arrow Icon */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: url("/dropdown.svg") $bg-secondary no-repeat calc(100% - 16px) !important;
+    border-radius: 8px;
+    padding-right: 3rem;
+    color: #B8C0CC;
+    border: none;
+    outline: none;
+    @media screen and (max-width: 1200px) {
+        width: 100%;
+    }
+}
+
+.withIcon {
+    border-radius: 0 8px 8px 0;
+}

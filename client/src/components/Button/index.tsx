@@ -3,7 +3,7 @@ import cx from "classnames"
 
 interface Props {
     submit?: boolean
-    secondary: boolean
+    secondary?: boolean
     children: React.ReactElement | string
     disabled?: boolean
 }

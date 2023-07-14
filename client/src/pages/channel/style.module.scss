@@ -1,0 +1,96 @@
+.logoDivider {
+    border: none;
+    height: 1px;
+    color: #343d4a;
+    background-color: #343d4a;
+    width: 100%;
+    margin-bottom: 1.6rem;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 1rem 0;
+
+    h1 {
+        margin: 0;
+    }
+}
+
+.actions {
+    display: flex;
+    justify-content: end;
+    gap: 1rem;
+
+    button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 2.5rem;
+
+        svg {
+            width: 1.43rem;
+            height: 1.43rem;
+        }
+    }
+}
+
+.back {
+    display: flex;
+    align-items: center;
+    color: $accent-secondary;
+    gap: .6rem;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.channelMeta {
+    display: flex;
+    justify-content: center;
+    gap: 1.7rem;
+
+    .textMeta {
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .desc {
+        max-width: 67%;
+    }
+
+    .authors {
+        color: #B8C0CC;
+        font-size: 1rem;
+        font-weight: 400;
+    }
+
+    .title {
+        padding: 0;
+        margin: 0;
+        font-size: 2.5rem;
+        color: #FFF;
+    }
+    
+    .image img {
+        width: 11rem;
+        height: 11rem;
+        border-radius: 5px;
+    }
+}
+
+.epCount {
+    text-align: end;
+}
+
+.spaceBottom {
+    margin-bottom: 1.5rem;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+}

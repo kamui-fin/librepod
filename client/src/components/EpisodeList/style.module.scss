@@ -1,0 +1,21 @@
+.container, .list {
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    gap: 3rem;
+}
+
+.list {
+    gap: 1.5rem;
+}
+
+.dateHeader {
+    padding: 0;
+    margin: 0;
+    margin-bottom: .5rem;
+    color: #B8C0CC;
+    font-size: 1rem;
+    letter-spacing: 0.02844rem;
+}

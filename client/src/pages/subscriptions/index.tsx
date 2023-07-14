@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import Button from "../../components/Button"
 import Layout from "../../components/Layout"
 import SearchBar from "../../components/Search"
@@ -17,7 +18,7 @@ const SubscriptionsPage = () => {
     return (
         <Layout>
             <header>
-                <h1>Subscriptions</h1>
+                    <h1>Subscriptions</h1>
                 <div className={styles.actions}>
                     <Button>
                         <IoMdAdd />

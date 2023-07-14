@@ -1,0 +1,32 @@
+.logoDivider {
+    border: none;
+    height: 1px;
+    color: #343d4a;
+    background-color: #343d4a;
+    width: 100%;
+    margin-bottom: 1.0rem;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 1rem 0;
+
+    h1 {
+        margin: 0;
+    }
+}
+
+.actions {
+    display: flex;
+    height: 100%;
+    gap: 1rem;
+}
+
+.clearHistory {
+    color: $accent-secondary;
+    width: 100%;
+    display: flex;
+    justify-content: end;
+}

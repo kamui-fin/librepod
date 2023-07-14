@@ -12,11 +12,16 @@ import FeedPage from "./pages/feed"
 import SubscriptionsPage from "./pages/subscriptions"
 import SettingsPage from "./pages/settings"
 import HistoryPage from "./pages/history"
+import ChannelPage from "./pages/channel"
 
 const rootPaths = [
     {
         element: <FeedPage />,
         index: true,
+    },
+    {
+        path: "/channel",
+        element: <ChannelPage />,
     },
     {
         path: "/subscriptions",
