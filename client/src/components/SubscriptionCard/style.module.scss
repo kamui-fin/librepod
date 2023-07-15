@@ -8,6 +8,12 @@
     text-align: center;
     position: relative;
 
+    &.unwrapped:hover {
+        cursor: pointer;
+        filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
+        transition: all .1s linear;
+    }
+
     img {
         width: 11rem;
         height: 11rem;
@@ -32,8 +38,17 @@
 
 .contextMenu {
     position: absolute;
-    bottom: 0.5rem;
-    right: 0.8rem;
+    border-radius: 50%;
+
+    bottom: 0.3rem;
+    right: 0.4rem;
+
+    width: 1.6375rem;
+    height: 1.6375rem; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: .2rem;
 
     svg {
         width: 1rem;
@@ -43,31 +58,38 @@
             cursor: pointer;
         }
     }
+}
 
-    .menu {
-        display: none;
-        position: absolute;
-        background: #272e38;
-        border-radius: 0.4375rem;
-        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+.container {
+    position: relative;
+    width: fit-content;
+}
 
-        .menuItem {
-            margin: 0.5rem 1rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.2rem;
+.menu {
+    display: none;
+    position: absolute;
+    right: -100px;
+    bottom: -30px;
+    background: #272e38;
+    border-radius: 0.4375rem;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    outline: none;
 
-            span {
-                font-size: 0.8rem;
-                font-weight: 400;
-            }
+    .menuItem {
+        margin: 0.5rem 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.6rem;
 
-            &:hover {
-                cursor: pointer;
-                opacity: 90%;
-                transition: all 0.3s ease-in-out;
-            }
+        span {
+            font-weight: 400;
+        }
+
+        &:hover {
+            cursor: pointer;
+            opacity: 80%;
+            transition: all 100ms linear;
         }
     }
 }
@@ -78,4 +100,8 @@
 
 .menu.show {
     display: flex;
+}
+
+.circle {
+    background: $bg-main;
 }

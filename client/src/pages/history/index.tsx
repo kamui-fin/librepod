@@ -2,6 +2,7 @@ import EpisodeList, { Episode } from "../../components/EpisodeList"
 import styles from "./style.module.scss"
 import SearchBar from "../../components/Search"
 import Layout from "../../components/Layout"
+import ActionTitleBar from "../../components/ActionTitleBar"
 
 const data: Episode[] = [
     {
@@ -37,15 +38,13 @@ const data: Episode[] = [
 const HistoryPage = () => {
     return (
         <Layout>
-            <header>
-                <h1>Listening History</h1>
-                <div className={styles.actions}>
-                    <SearchBar text="Find episodes" />
-                </div>
-            </header>
-            <hr className={styles.logoDivider} />
-            <div className={styles.clearHistory}><span>Clear History</span></div>
-            <EpisodeList items={data} />
+            <Layout inner>
+            <ActionTitleBar title="Listen History" actions={[
+                <SearchBar text="Find episodes" />
+            ]} />
+                <div className={styles.clearHistory}><span>Clear History</span></div>
+                <EpisodeList items={data} />
+            </Layout>
         </Layout>
     )
 }

@@ -20,7 +20,7 @@ const rootPaths = [
         index: true,
     },
     {
-        path: "/channel",
+        path: "/subscriptions/channel",
         element: <ChannelPage />,
     },
     {

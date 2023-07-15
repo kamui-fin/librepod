@@ -4,6 +4,7 @@ import styles from "./style.module.scss"
 import SearchBar from "../../components/Search"
 import { BsFillPlayFill } from "react-icons/bs"
 import EpisodeList, { Episode } from "../../components/EpisodeList"
+import ActionTitleBar from "../../components/ActionTitleBar"
 
 const data: Episode[] = [
     {
@@ -38,18 +39,16 @@ const data: Episode[] = [
 const FeedPage = () => {
     return (
         <Layout>
-            <header>
-                <h1>Feed</h1>
-                <div className={styles.actions}>
+            <Layout inner>
+                <ActionTitleBar title="Feed" actions={[
                     <Button secondary>
                         <BsFillPlayFill />
                         <span>Play All</span>
-                    </Button>
+                    </Button>,
                     <SearchBar text="Find episodes" />
-                </div>
-            </header>
-            <hr className={styles.logoDivider} />
-            <EpisodeList items={data} />
+                ]} />
+                <EpisodeList items={data} />
+            </Layout>
         </Layout>
     )
 }

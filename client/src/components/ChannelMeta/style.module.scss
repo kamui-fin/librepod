@@ -1,0 +1,45 @@
+.channelMeta {
+    display: flex;
+    gap: 1.7rem;
+    justify-content: center;
+
+    .textMeta {
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .desc {
+        max-width: 67%;
+    }
+
+    .authors {
+        color: #B8C0CC;
+        font-size: 1rem;
+        font-weight: 400;
+    }
+
+    .title {
+        padding: 0;
+        margin: 0;
+        font-size: 2.5rem;
+        color: #FFF;
+    }
+    
+    .image img {
+        width: 11rem;
+        height: 11rem;
+        border-radius: 5px;
+    }
+
+    .link {
+        display: flex;
+        align-items: center;
+        color: $accent-secondary;
+        gap: .6rem;
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+}

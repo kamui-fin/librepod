@@ -5,7 +5,6 @@ import Input from "@/components/Input"
 import { Formik, ErrorMessage } from "formik"
 import { z } from "zod"
 import { toFormikValidationSchema } from "zod-formik-adapter"
-import { axios } from "@/lib/api"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/lib/useAuth"
 

@@ -1,0 +1,40 @@
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 1rem 0;
+
+    h1 {
+        margin: 0;
+    }
+}
+
+.actions {
+    display: flex;
+    height: 100%;
+    gap: 1rem;
+
+    button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 2.5rem;
+
+        svg {
+            width: 1.43rem;
+            height: 1.43rem;
+        }
+    }
+}
+
+.back {
+    display: flex;
+    align-items: center;
+    color: $accent-secondary;
+    gap: .6rem;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+

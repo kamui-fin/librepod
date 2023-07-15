@@ -5,6 +5,7 @@ import SearchBar from "../../components/Search"
 import SubscriptionCard from "../../components/SubscriptionCard"
 import styles from "./style.module.scss"
 import { IoMdAdd } from "react-icons/io"
+import ActionTitleBar from "../../components/ActionTitleBar"
 
 const subs = [
     {
@@ -17,16 +18,10 @@ const subs = [
 const SubscriptionsPage = () => {
     return (
         <Layout>
-            <header>
-                    <h1>Subscriptions</h1>
-                <div className={styles.actions}>
-                    <Button>
-                        <IoMdAdd />
-                    </Button>
-                    <SearchBar text="Search channels" />
-                </div>
-            </header>
-            <hr className={styles.logoDivider} />
+            <ActionTitleBar title="Subscriptions" actions={[
+                <Button><IoMdAdd /></Button>,
+                <SearchBar text="Search channels" />
+            ]} />
             {subs.map((sub) => (
                 <SubscriptionCard {...sub} />
             ))}

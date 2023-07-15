@@ -1,3 +1,4 @@
+import ActionTitleBar from "../../components/ActionTitleBar"
 import Layout from "../../components/Layout"
 import styles from "./style.module.scss"
 import { GrCircleInformation } from "react-icons/gr"
@@ -5,8 +6,7 @@ import { GrCircleInformation } from "react-icons/gr"
 const SettingsPage = () => {
     return (
         <Layout>
-            <h1>Settings</h1>
-            <hr className={styles.logoDivider} />
+            <ActionTitleBar title="Settings" />
             <div className={styles.notImplemented}>
                 <GrCircleInformation />
                 <span>Coming soon!</span>

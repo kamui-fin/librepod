@@ -1,23 +1,16 @@
+import styles from "./style.module.scss"
+
 import { BsFillPlayFill } from "react-icons/bs";
 import EpisodeList, { Episode } from "../../components/EpisodeList";
-import styles from "./style.module.scss"
 import Button from "../../components/Button";
 import SearchBar from "../../components/Search";
 import Layout from "../../components/Layout";
-import { BiArrowBack, BiLinkAlt } from "react-icons/bi"
 import Select from "../../components/Select";
 import cx from "classnames"
 import { MdSort } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
-
-interface Channel {
-    title: string;
-    description: string;
-    link: string;
-    authors: string;
-    image: string;
-    episodes: Episode[];
-}
+import ActionTitleBar from "../../components/ActionTitleBar";
+import Divider from "../../components/Divider";
+import ChannelMeta, { Channel } from "../../components/ChannelMeta";
 
 const data: Episode[] = [
     {
@@ -59,43 +52,17 @@ const channel: Channel = {
 }
 
 const ChannelPage = () => {
-    const navigate = useNavigate();
-    const goBack = () => {
-        navigate(-1)
-    }
     return (
         <Layout>
-            <header>
-                <div className={styles.back} onClick={goBack}>
-                    <BiArrowBack />
-                    <span>Back</span>
-                </div>
-                <div className={styles.actions}>
-                    <SearchBar text="Find episodes" />
-                </div>
-            </header>
-            <hr className={styles.logoDivider} />
-            <div className={styles.channelMeta}>
-                <div className={styles.image}>
-                    <img src={channel.image} />
-                </div>
-                <div className={styles.textMeta}>
-                    <h1 className={styles.title}>{channel.title}</h1>
-                    <div className={styles.authors}>{channel.authors}</div>
-                    <div className={styles.back}>
-                        <BiLinkAlt />
-                        <span>{channel.link}</span>
-                    </div>
-                    <div className={styles.desc}>
-                        {channel.description}
-                    </div>
-                </div>
-            </div>
-            <div className={styles.container}>
+            <ActionTitleBar actions={[
+                <SearchBar text="Find episodes" />
+            ]} />
+            <Layout inner>
+                <ChannelMeta channel={channel} />
                 <p className={styles.epCount}>
                     {channel.episodes.length} EPISODES
                 </p>
-                <hr className={styles.logoDivider} />
+                <Divider />
                 <div className={cx(styles.actions, styles.spaceBottom)}>
                     <Button secondary>
                         <BsFillPlayFill />
@@ -104,7 +71,7 @@ const ChannelPage = () => {
                     <Select items={["Sort By"]} icon={<MdSort />} />
                 </div>
                 <EpisodeList items={channel.episodes} channelOnly />
-            </div>
+            </Layout>
         </Layout>
     )
 }
