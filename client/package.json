@@ -15,9 +15,11 @@
     "classnames": "^2.3.2",
     "formik": "^2.4.2",
     "normalize.css": "^8.0.1",
+    "rc-slider": "^10.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.10.1",
+    "react-range": "^1.8.14",
     "react-router-dom": "^6.14.1",
     "zod": "^3.21.4",
     "zod-formik-adapter": "^1.2.0"

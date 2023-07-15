@@ -15,6 +15,10 @@
     color: $fg-main;
 }
 
+html, body, #root {
+    height: 100%;
+}
+
 a {
     color: $accent-secondary;
     text-decoration: none;

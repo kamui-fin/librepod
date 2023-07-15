@@ -1,10 +1,18 @@
 .container {
     width: 20rem;
-    height: 100vh;
+    height: 100%;
     overflow-y: none;
     background: #2d343f;
     box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.25);
     padding: 1rem 2rem;
+
+
+    nav {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
 }
 
 .logo img {
@@ -52,4 +60,85 @@ a.active {
     &:hover {
         cursor: pointer;
     }
+}
+
+.player {
+    margin-bottom: 4rem;
+    img {
+        max-width: 100%;
+        border-radius: 0.8125rem;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+        color: $fg-main;
+        font-weight: 500;
+        padding: 0;
+        margin: 0;
+
+        margin-top: 1rem;
+    }
+
+    span, p {
+        color: #B8C0CC;
+        font-weight: 400;
+    }
+
+    span {
+        font-size: 0.625rem; 
+    }
+
+    .slider {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .controls {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1.4rem;
+
+        .iconOnly {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .circleBtn {
+            width: 2.625rem;
+            height: 2.625rem;
+            border-radius: 50%;
+            background: $bg-main;
+            filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            svg {
+                font-size: 1.5rem;
+            }
+        }
+
+        .pause {
+            width: 3.375rem;
+            height: 3.375rem;
+        }
+    }
+}
+
+.sliderTrack {
+    height: 4px;
+    width: 100%;
+    background: #b8c0cc;
+    border-radius: 5px;
+}
+
+.sliderThumb {
+    height: .8rem;
+    width: .8rem;
+    background: #d9d9d9;
+    border-radius: 50%;
 }
