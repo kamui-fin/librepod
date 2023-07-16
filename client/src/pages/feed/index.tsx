@@ -5,6 +5,7 @@ import SearchBar from "../../components/Search"
 import { BsFillPlayFill } from "react-icons/bs"
 import EpisodeList, { Episode } from "../../components/EpisodeList"
 import ActionTitleBar from "../../components/ActionTitleBar"
+import Modal from "../../components/Modal"
 
 const data: Episode[] = [
     {
@@ -40,15 +41,19 @@ const FeedPage = () => {
     return (
         <Layout>
             <Layout inner>
-                <ActionTitleBar title="Feed" actions={[
-                    <Button secondary>
-                        <BsFillPlayFill />
-                        <span>Play All</span>
-                    </Button>,
-                    <SearchBar text="Find episodes" />
-                ]} />
+                <ActionTitleBar
+                    title="Feed"
+                    actions={[
+                        <Button secondary>
+                            <BsFillPlayFill />
+                            <span>Play All</span>
+                        </Button>,
+                        <SearchBar text="Find episodes" />,
+                    ]}
+                />
                 <EpisodeList items={data} />
             </Layout>
+            <Modal></Modal>
         </Layout>
     )
 }

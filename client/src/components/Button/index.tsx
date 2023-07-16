@@ -6,13 +6,24 @@ interface Props {
     secondary?: boolean
     children: React.ReactElement | string
     disabled?: boolean
+    className?: string
+    onClick: () => void;
 }
 
-const Button = ({ secondary, submit, children, disabled }: Props) => {
+const Button = ({
+    className,
+    secondary,
+    submit,
+    children,
+    disabled,
+    onClick,
+}: Props) => {
     if (submit) {
         return (
             <input
-                className={cx(styles.btn, { [styles.secondary]: secondary })}
+                className={cx(styles.btn, className, {
+                    [styles.secondary]: secondary,
+                })}
                 disabled={disabled}
                 type="submit"
                 value={children.toString()}
@@ -21,8 +32,11 @@ const Button = ({ secondary, submit, children, disabled }: Props) => {
     } else {
         return (
             <button
-                className={cx(styles.btn, { [styles.secondary]: secondary })}
+                className={cx(styles.btn, className, {
+                    [styles.secondary]: secondary,
+                })}
                 disabled={disabled}
+                onClick={onClick}
             >
                 {children}
             </button>

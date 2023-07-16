@@ -68,7 +68,7 @@ const ChannelPage = () => {
                         <BsFillPlayFill />
                         <span>Play All</span>
                     </Button>
-                    <Select items={["Sort By"]} icon={<MdSort />} />
+                    <Select items={["Most Recent", "Least Recent"]} icon={<MdSort />} />
                 </div>
                 <EpisodeList items={channel.episodes} channelOnly />
             </Layout>

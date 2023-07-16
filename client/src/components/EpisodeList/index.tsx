@@ -17,35 +17,37 @@ interface Props {
 
 const EpisodeList = ({ items, channelOnly = false }: Props) => {
     const groupByDate = (eps: Episode[]) => {
-        let grouped: { [key: string]: Episode[] } = {};
+        let grouped: { [key: string]: Episode[] } = {}
         for (let ep of eps) {
-            const date = ep.date.toLocaleDateString();
+            const date = ep.date.toLocaleDateString()
             if (date in grouped) {
-                grouped[date].push(ep);
+                grouped[date].push(ep)
             } else {
-                grouped[date] = new Array(ep);
+                grouped[date] = new Array(ep)
             }
         }
         return grouped
     }
     return (
         <div className={styles.container}>
-            {
-                channelOnly ?
-                    (
+            {channelOnly ? (
+                <div className={styles.list}>
+                    {items.map((item) => (
+                        <EpisodeListItem channelOnly item={item} />
+                    ))}
+                </div>
+            ) : (
+                Object.entries(groupByDate(items)).map(([date, items]) => (
+                    <div className={styles.dateGroup}>
+                        <h2 className={styles.dateHeader}>{date}</h2>
                         <div className={styles.list}>
-                            {items.map(item => <EpisodeListItem channelOnly item={item} />)}
+                            {items.map((item) => (
+                                <EpisodeListItem item={item} />
+                            ))}
                         </div>
-                    )
-                    : Object.entries(groupByDate(items)).map(([date, items]) => (
-                        <div className={styles.dateGroup}>
-                            <h2 className={styles.dateHeader}>{date}</h2>
-                            <div className={styles.list}>
-                                {items.map(item => <EpisodeListItem item={item} />)}
-                            </div>
-                        </div>
-                    ))
-            }
+                    </div>
+                ))
+            )}
         </div>
     )
 }
