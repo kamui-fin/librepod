@@ -7,7 +7,7 @@ interface Props {
     children: React.ReactElement | string
     disabled?: boolean
     className?: string
-    onClick: () => void;
+    onClick: () => void
 }
 
 const Button = ({

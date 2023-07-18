@@ -1,16 +1,16 @@
 import styles from "./style.module.scss"
 
-import { BsFillPlayFill } from "react-icons/bs";
-import EpisodeList, { Episode } from "../../components/EpisodeList";
-import Button from "../../components/Button";
-import SearchBar from "../../components/Search";
-import Layout from "../../components/Layout";
-import Select from "../../components/Select";
+import { BsFillPlayFill } from "react-icons/bs"
+import EpisodeList, { Episode } from "../../components/EpisodeList"
+import Button from "../../components/Button"
+import SearchBar from "../../components/Search"
+import Layout from "../../components/Layout"
+import Select from "../../components/Select"
 import cx from "classnames"
-import { MdSort } from "react-icons/md";
-import ActionTitleBar from "../../components/ActionTitleBar";
-import Divider from "../../components/Divider";
-import ChannelMeta, { Channel } from "../../components/ChannelMeta";
+import { MdSort } from "react-icons/md"
+import ActionTitleBar from "../../components/ActionTitleBar"
+import Divider from "../../components/Divider"
+import ChannelMeta, { Channel } from "../../components/ChannelMeta"
 
 const data: Episode[] = [
     {
@@ -47,16 +47,15 @@ const channel: Channel = {
     title: "科技乱炖",
     authors: "郑长明, 哲瀚",
     link: "https://www.ximalaya.com/album/70159551",
-    description: "由多名资深从业者主持的科技点评播客，以实际工作中积累的经验为基础，结合实际，把近期科技热点变成犀利、独到、深刻的独家观点。",
-    episodes: data
+    description:
+        "由多名资深从业者主持的科技点评播客，以实际工作中积累的经验为基础，结合实际，把近期科技热点变成犀利、独到、深刻的独家观点。",
+    episodes: data,
 }
 
 const ChannelPage = () => {
     return (
         <Layout>
-            <ActionTitleBar actions={[
-                <SearchBar text="Find episodes" />
-            ]} />
+            <ActionTitleBar actions={[<SearchBar text="Find episodes" />]} />
             <Layout inner>
                 <ChannelMeta channel={channel} />
                 <p className={styles.epCount}>
@@ -68,7 +67,10 @@ const ChannelPage = () => {
                         <BsFillPlayFill />
                         <span>Play All</span>
                     </Button>
-                    <Select items={["Most Recent", "Least Recent"]} icon={<MdSort />} />
+                    <Select
+                        items={["Most Recent", "Least Recent"]}
+                        icon={<MdSort />}
+                    />
                 </div>
                 <EpisodeList items={channel.episodes} channelOnly />
             </Layout>

@@ -52,7 +52,10 @@ const SidebarPlayer = () => {
                 <div className={styles.circleBtn}>
                     <BiSkipPrevious />
                 </div>
-                <div className={cx(styles.circleBtn, styles.pause)} onClick={() => setPaused(!paused)}>
+                <div
+                    className={cx(styles.circleBtn, styles.pause)}
+                    onClick={() => setPaused(!paused)}
+                >
                     {paused ? <BsFillPlayFill /> : <MdPause />}
                 </div>
                 <div className={styles.circleBtn}>

@@ -16,16 +16,19 @@ use uuid::Uuid;
 type RequireAuth = RequireAuthorizationLayer<Uuid, User>;
 
 pub fn build_router() -> Router<AppContext> {
-    let channel_routes = Router::new().route(
-        "/",
-        get(get_subscriptions)
-            .post(add_subscription)
-            .delete(delete_channel),
-    );
+    let channel_routes = Router::new()
+        .route(
+            "/",
+            get(get_subscriptions)
+                .post(add_subscription)
+                .delete(delete_channel),
+        )
+        .route_layer(RequireAuth::login());
 
     let feed_routes = Router::new()
         .route("/", get(retrieve_feed))
-        .route("/refresh", put(refresh_feed));
+        .route("/refresh", put(refresh_feed))
+        .route_layer(RequireAuth::login());
 
     let auth_routes = Router::new()
         .route("/me", get(me))

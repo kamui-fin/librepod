@@ -34,14 +34,14 @@ const SubscriptionsPage = () => {
             {subs.map((sub) => (
                 <SubscriptionCard {...sub} />
             ))}
-                <Modal
-                    title="Add Subscription"
-                    content={<Input placeholder="RSS Link" />}
-                    actionName="Add"
-                    primary={false}
-                    open={showAddModal}
-                    setOpen={setShowAddModal}
-                />
+            <Modal
+                title="Add Subscription"
+                content={<Input placeholder="RSS Link" />}
+                actionName="Add"
+                primary={false}
+                open={showAddModal}
+                setOpen={setShowAddModal}
+            />
         </Layout>
     )
 }

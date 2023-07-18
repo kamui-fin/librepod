@@ -4,14 +4,19 @@ use anyhow::Result;
 use chrono::DateTime;
 use chrono::Utc;
 use feed_rs::model;
+use feed_rs::model::Content;
 use feed_rs::model::Image;
 use feed_rs::model::Link;
+use feed_rs::model::MediaContent;
+use feed_rs::model::MediaObject;
 use feed_rs::model::Text;
 use futures::future;
 use futures::future::join_all;
+use mime::Mime;
 use sqlx::postgres::types::PgInterval;
 use sqlx::PgPool;
 use sqlx::Row;
+use url::Url;
 use uuid::Uuid;
 
 use crate::cache::get_response_with_cache;
@@ -448,10 +453,107 @@ pub async fn expand_db_channel(channel: DbPodcastChannel, pool: &PgPool) -> Resu
     Ok(channel)
 }
 
+fn pg_interval_to_duration(interval: PgInterval) -> Duration {
+    Duration::from_micros(interval.microseconds as u64)
+}
+
+pub async fn expand_db_episode(episode: DbPodcastEpisode, pool: &PgPool) -> Result<PodcastEpisode> {
+    let DbPodcastEpisode {
+        id,
+        channel_id,
+        title,
+        website_link,
+        published,
+        content_id,
+        summary_text_id,
+        media_object_id,
+    } = episode;
+    let media = sqlx::query!("SELECT * FROM media_object WHERE id = $1", media_object_id)
+        .map(|row| MediaObject {
+            title: None,
+            duration: row.duration.clone().map(pg_interval_to_duration),
+            content: vec![MediaContent {
+                url: row.url.map(|u| Url::parse(&u).unwrap()),
+                content_type: row
+                    .content_type
+                    .map(|c| c.parse().unwrap_or(mime::TEXT_PLAIN_UTF_8)),
+                height: row.height.map(|n| n as u32),
+                width: row.width.map(|n| n as u32),
+                size: row.size.map(|n| n as u64),
+                duration: row.duration.map(pg_interval_to_duration),
+                rating: None,
+            }],
+
+            thumbnails: vec![],
+            texts: vec![],
+            description: None,
+            community: None,
+            credits: vec![],
+        })
+        .fetch_optional(pool)
+        .await?;
+    let content = sqlx::query!("SELECT * FROM content WHERE id = $1", content_id)
+        .map(|row| Content {
+            body: row.body,
+            content_type: row
+                .content_type
+                .unwrap_or_default()
+                .parse()
+                .unwrap_or(mime::TEXT_PLAIN_UTF_8),
+            length: row.length.map(|n| n as u64),
+            src: row.src.map(link_from_href),
+        })
+        .fetch_optional(pool)
+        .await?;
+    let description = sqlx::query!("SELECT * FROM text_content WHERE id = $1", summary_text_id)
+        .map(|row| Text {
+            src: row.src,
+            content: row.content,
+            content_type: row.content_type.parse().unwrap(),
+        })
+        .fetch_optional(pool)
+        .await?;
+    let authors = sqlx::query_as!(
+        model::Person,
+        r#"
+        SELECT name, uri, email FROM person
+        LEFT JOIN channel_author ON channel_author.person_id = person.id
+        WHERE channel_author.channel_id = $1
+        "#,
+        id
+    )
+    .fetch_all(pool)
+    .await?;
+    let categories = sqlx::query_as!(
+        model::Category,
+        r#"
+        SELECT term, label, null as scheme FROM category
+        LEFT JOIN channel_category ON channel_category.category_id = category.id
+        WHERE channel_category.channel_id = $1
+        "#,
+        id
+    )
+    .fetch_all(pool)
+    .await?;
+    let episode = PodcastEpisode {
+        id,
+        title,
+        published,
+        website_link,
+        summary: description,
+        authors,
+        categories,
+        source_id: channel_id,
+        content,
+        media: media.unwrap(), // double check if safe
+    };
+    Ok(episode)
+}
+
 pub async fn get_subscription_episodes(
     user_id: Uuid,
     pool: &PgPool,
-) -> Result<Vec<DbPodcastEpisode>> {
+) -> Result<Vec<PodcastEpisode>> {
     let episodes = sqlx::query_as!(
         DbPodcastEpisode,
         r#"
@@ -464,34 +566,10 @@ pub async fn get_subscription_episodes(
     )
     .fetch_all(pool)
     .await?;
+    let episodes = future::try_join_all(episodes.into_iter().map(|c| expand_db_episode(c, pool)))
+        .await
+        .unwrap();
     Ok(episodes)
-}
-
-pub async fn get_episodes(pool: &PgPool) -> Result<Vec<DbPodcastEpisode>> {
-    let episodes = sqlx::query_as!(
-        DbPodcastEpisode,
-        r#"
-        SELECT * FROM episode
-        ORDER BY published DESC
-        "#,
-    )
-    .fetch_all(pool)
-    .await?;
-    Ok(episodes)
-}
-
-pub async fn get_episode(id: &str, pool: &PgPool) -> Result<Option<DbPodcastEpisode>> {
-    let episode = sqlx::query_as!(
-        DbPodcastEpisode,
-        r#"
-        SELECT * FROM episode WHERE id = $1
-        ORDER BY published DESC
-        "#,
-        id
-    )
-    .fetch_optional(pool)
-    .await?;
-    Ok(episode)
 }
 
 pub async fn add_episode(episode: &PodcastEpisode, pool: &PgPool) -> Result<bool> {

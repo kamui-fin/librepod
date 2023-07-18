@@ -5,7 +5,7 @@ import SearchBar from "../../components/Search"
 import { BsFillPlayFill } from "react-icons/bs"
 import EpisodeList, { Episode } from "../../components/EpisodeList"
 import ActionTitleBar from "../../components/ActionTitleBar"
-import Modal from "../../components/Modal"
+import ConfirmationModal from "../../components/Modal"
 
 const data: Episode[] = [
     {
@@ -53,7 +53,7 @@ const FeedPage = () => {
                 />
                 <EpisodeList items={data} />
             </Layout>
-            <Modal></Modal>
+            <ConfirmationModal></ConfirmationModal>
         </Layout>
     )
 }
