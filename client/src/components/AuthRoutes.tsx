@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/useAuth"
 
 export const ProtectedRoute = ({ children }) => {
     const { user } = useAuth()
-    if (user === null) {
+    if (user === undefined || user == null) {
         return <Navigate to="/login" />
     }
     return children

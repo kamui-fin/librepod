@@ -4,14 +4,16 @@ import { MdDelete } from "react-icons/md"
 import cx from "classnames"
 import { useEffect, useRef, useState } from "react"
 import { Link } from "react-router-dom"
+import { Subscription } from "../../lib/types"
+import { deleteSubscription } from "../../lib/api"
 
 interface Props {
-    image: string
-    title: string
-    numEpisodes: number
+    sub: Subscription
+    onDelete: () => void
 }
 
-const SubscriptionCard = ({ image, title, numEpisodes }: Props) => {
+const SubscriptionCard = ({ sub, onDelete }: Props) => {
+    const { id, logo, title, num_episodes } = sub
     const [openContext, setOpenContext] = useState<boolean>(false)
     const focusRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
@@ -23,17 +25,26 @@ const SubscriptionCard = ({ image, title, numEpisodes }: Props) => {
     }, [openContext])
     return (
         <div className={styles.container}>
-            <div className={cx(styles.card, { [styles.unwrapped]: !openContext })}>
-                <img src={image} />
-                <Link to="/subscriptions/channel">
+            <div
+                className={cx(styles.card, {
+                    [styles.unwrapped]: !openContext,
+                })}
+            >
+                <img src={logo.uri} />
+                <Link to={`/subscriptions/channel/${id}`}>
                     <h3>{title}</h3>
                 </Link>
-                <p>{numEpisodes} episodes</p>
+                <p>{num_episodes} episodes</p>
 
-                <div className={cx(styles.contextMenu, { [styles.circle]: openContext })} onMouseUp={() => {
-                    console.log(openContext);
-                    setOpenContext(!openContext)
-                }}>
+                <div
+                    className={cx(styles.contextMenu, {
+                        [styles.circle]: openContext,
+                    })}
+                    onMouseUp={() => {
+                        console.log(openContext)
+                        setOpenContext(!openContext)
+                    }}
+                >
                     <FiMoreVertical />
                 </div>
             </div>
@@ -43,7 +54,14 @@ const SubscriptionCard = ({ image, title, numEpisodes }: Props) => {
                 ref={focusRef}
                 onBlur={() => setOpenContext(false)}
             >
-                <div className={cx(styles.delete, styles.menuItem)}>
+                <div
+                    className={cx(styles.delete, styles.menuItem)}
+                    onClick={async () => {
+                        const res = await deleteSubscription(id)
+                        onDelete()
+                        console.log(res)
+                    }}
+                >
                     <MdDelete />
                     <span>Delete</span>
                 </div>

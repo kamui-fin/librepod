@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, useLoaderData } from "react-router-dom"
 import Button from "../../components/Button"
 import Layout from "../../components/Layout"
 import SearchBar from "../../components/Search"
@@ -9,17 +9,13 @@ import ActionTitleBar from "../../components/ActionTitleBar"
 import Modal from "../../components/Modal"
 import Input from "../../components/Input"
 import { useState } from "react"
-
-const subs = [
-    {
-        image: "https://i.typlog.com/bitvoice/8446580582_247966.png",
-        title: "比特新声",
-        numEpisodes: 324,
-    },
-]
+import { Subscription } from "../../lib/types"
+import { addSubscription } from "../../lib/api"
 
 const SubscriptionsPage = () => {
     const [showAddModal, setShowAddModal] = useState(false)
+    const [addRssLink, setAddRssLink] = useState("")
+    const [subs, setSubs] = useState<Subscription[]>(useLoaderData())
     return (
         <Layout>
             <ActionTitleBar
@@ -31,16 +27,34 @@ const SubscriptionsPage = () => {
                     <SearchBar text="Search channels" />,
                 ]}
             />
-            {subs.map((sub) => (
-                <SubscriptionCard {...sub} />
-            ))}
+            <div className={styles.subs}>
+                {subs.map((sub) => (
+                    <SubscriptionCard
+                        sub={sub}
+                        onDelete={() => {
+                            setSubs(subs.filter((s) => s.id !== sub.id))
+                        }}
+                    />
+                ))}
+            </div>
             <Modal
                 title="Add Subscription"
-                content={<Input placeholder="RSS Link" />}
+                content={
+                    <Input
+                        onChange={(e) => setAddRssLink(e.target.value)}
+                        placeholder="RSS Link"
+                        value={addRssLink}
+                    />
+                }
                 actionName="Add"
                 primary={false}
                 open={showAddModal}
                 setOpen={setShowAddModal}
+                onDone={async () => {
+                    const sub = await addSubscription(addRssLink)
+                    setSubs([...subs, sub])
+                    console.log(sub)
+                }}
             />
         </Layout>
     )

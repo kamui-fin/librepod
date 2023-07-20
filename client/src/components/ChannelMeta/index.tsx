@@ -1,35 +1,30 @@
-import { BiLinkAlt } from "react-icons/bi";
-import { Episode } from "../EpisodeList";
+import { BiLinkAlt } from "react-icons/bi"
+import { Episode } from "../EpisodeList"
 import styles from "./style.module.scss"
-
-export interface Channel {
-    title: string;
-    description: string;
-    link: string;
-    authors: string;
-    image: string;
-    episodes: Episode[];
-}
+import { Subscription } from "../../lib/types"
+import { stripHtml } from "string-strip-html"
 
 interface Props {
-    channel: Channel;
+    channel: Subscription
 }
 
 const ChannelMeta = ({ channel }: Props) => {
     return (
         <div className={styles.channelMeta}>
             <div className={styles.image}>
-                <img src={channel.image} />
+                <img src={channel.logo.uri} />
             </div>
             <div className={styles.textMeta}>
                 <h1 className={styles.title}>{channel.title}</h1>
-                <div className={styles.authors}>{channel.authors}</div>
+                <div className={styles.authors}>
+                    {channel.authors.map((p) => p.name).join(", ")}
+                </div>
                 <div className={styles.link}>
                     <BiLinkAlt />
-                    <span>{channel.link}</span>
+                    <span>{channel.website_link}</span>
                 </div>
                 <div className={styles.desc}>
-                    {channel.description}
+                    {stripHtml(channel.description.content).result}
                 </div>
             </div>
         </div>

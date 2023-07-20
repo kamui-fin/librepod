@@ -61,13 +61,15 @@ async fn start_server() -> Result<()> {
     rand::thread_rng().fill(&mut secret);
 
     let session_store = RedisSessionStore::new("redis://127.0.0.1")?;
-    let session_layer = SessionLayer::new(session_store, &secret);
+    let session_layer = SessionLayer::new(session_store, &secret)
+        .with_same_site_policy(axum_login::axum_sessions::SameSite::None)
+        .with_http_only(true);
 
     let user_store = PostgresStore::<User>::new(state.pool.clone())
         .with_query("SELECT * FROM account WHERE id = $1");
     let auth_layer = AuthLayer::new(user_store, &secret);
 
-    let cors = CorsLayer::permissive();
+    let cors = CorsLayer::very_permissive();
 
     let app = build_router()
         .with_state(state)

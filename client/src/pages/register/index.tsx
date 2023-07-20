@@ -7,6 +7,7 @@ import { z } from "zod"
 import { toFormikValidationSchema } from "zod-formik-adapter"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/lib/useAuth"
+import { toast } from "react-toastify"
 
 const Schema = z
     .object({
@@ -45,7 +46,14 @@ const RegisterPage = () => {
             }}
             validationSchema={toFormikValidationSchema(Schema)}
             onSubmit={async (values, { setSubmitting }) => {
-                register(values, () => setSubmitting(false))
+                try {
+                    await register(values, () => setSubmitting(false))
+                } catch (err) {
+                    toast.error("Failed to register", {
+                        position: "top-center",
+                        autoClose: 5000,
+                    })
+                }
             }}
         >
             {({

@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo } from "react"
+import { createContext, useContext, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { useLocalStorage } from "@/lib/useLocalStorage"
 import { axios } from "./api"
@@ -11,22 +11,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const register = async (values, onDone: () => void) => {
         const { data } = await axios.put("/auth/register", values)
-        setUser(data)
-        navigate("/")
-        onDone()
+        setUser(data, onDone)
     }
 
     const login = async (values, onDone: () => void) => {
         const { data } = await axios.put("/auth/login", values)
-        setUser(data)
-        navigate("/")
-        onDone()
+        setUser(data, onDone)
     }
 
     const logout = async () => {
-        await axios.put("/auth/logout")
+        try {
+            await axios.put("/auth/logout")
+        } catch { }
         setUser(null)
-        navigate("/", { replace: true })
     }
 
     const value = useMemo(

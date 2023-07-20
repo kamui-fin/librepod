@@ -32,6 +32,8 @@ pub struct PodcastChannel {
     pub contributors: Vec<Person>,
     #[serde(serialize_with = "custom_serde::serialize_vec_category")]
     pub categories: Vec<Category>,
+
+    pub num_episodes: usize,
 }
 
 impl PodcastChannel {
@@ -51,6 +53,7 @@ impl PodcastChannel {
                 logo: feed.logo.clone(),
                 icon: feed.icon.clone(),
                 rss_link,
+                num_episodes: feed.entries.len(),
             })
         }
     }

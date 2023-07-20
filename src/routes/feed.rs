@@ -22,6 +22,15 @@ pub async fn get_subscriptions(
     Ok(Json(channels))
 }
 
+pub async fn get_subscription(
+    Extension(user): Extension<User>,
+    Path(id): Path<String>,
+    State(state): State<AppContext>,
+) -> Result<impl IntoResponse, AppError> {
+    let channel = feed::get_channel(&id, &state.pool).await?;
+    Ok(Json(channel))
+}
+
 pub async fn add_subscription(
     Extension(user): Extension<User>,
     State(mut state): State<AppContext>,
@@ -34,12 +43,14 @@ pub async fn add_subscription(
     if (feed::get_channel(&data.channel.id, &state.pool).await?).is_none() {
         feed::add_channel(&data.channel, &state.pool).await?;
     }
+
+    feed::add_subscription(user.id, &data.channel.id, &state.pool).await?;
+
     // also import missing episodes since you already took the time to fetch RSS
+    // side effect that delays result, find alternative
     feed::delta_update_feed(&state.pool, &data).await?;
 
-    let res = feed::add_subscription(user.id, &data.channel.id, &state.pool).await?;
-
-    Ok(Json(json!({ "ok": res })))
+    Ok(Json(data.channel))
 }
 
 pub async fn delete_channel(

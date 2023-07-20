@@ -12,6 +12,7 @@ interface Props {
 
     open: boolean
     setOpen: React.Dispatch<SetStateAction<boolean>>
+    onDone: () => void
 }
 
 const Modal = ({
@@ -21,6 +22,7 @@ const Modal = ({
     title,
     open,
     setOpen,
+    onDone,
 }: Props) => {
     return (
         <>
@@ -35,7 +37,9 @@ const Modal = ({
                     >
                         Cancel
                     </Button>
-                    <Button secondary={!primary}>{actionName}</Button>
+                    <Button onClick={() => onDone()} secondary={!primary}>
+                        {actionName}
+                    </Button>
                 </div>
             </div>
             <div

@@ -1,20 +1,19 @@
 .channelMeta {
     display: flex;
     gap: 1.7rem;
-    justify-content: center;
 
     .textMeta {
         display: flex;
         flex-direction: column;
-        gap: .5rem;
+        gap: 0.5rem;
     }
 
     .desc {
-        max-width: 67%;
+        // max-width: 67%;
     }
 
     .authors {
-        color: #B8C0CC;
+        color: #b8c0cc;
         font-size: 1rem;
         font-weight: 400;
     }
@@ -23,9 +22,9 @@
         padding: 0;
         margin: 0;
         font-size: 2.5rem;
-        color: #FFF;
+        color: #fff;
     }
-    
+
     .image img {
         width: 11rem;
         height: 11rem;
@@ -36,7 +35,7 @@
         display: flex;
         align-items: center;
         color: $accent-secondary;
-        gap: .6rem;
+        gap: 0.6rem;
 
         &:hover {
             cursor: pointer;

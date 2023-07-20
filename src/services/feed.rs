@@ -437,6 +437,18 @@ pub async fn expand_db_channel(channel: DbPodcastChannel, pool: &PgPool) -> Resu
     )
     .fetch_all(pool)
     .await?;
+
+    let num_episodes = sqlx::query!(
+        r#"
+        SELECT COUNT(*) FROM episode
+        WHERE channel_id = $1
+    "#,
+        id
+    )
+    .fetch_one(pool)
+    .await?
+    .count
+    .unwrap_or_default() as usize;
     let channel = PodcastChannel {
         id,
         title,
@@ -449,6 +461,7 @@ pub async fn expand_db_channel(channel: DbPodcastChannel, pool: &PgPool) -> Resu
         authors,
         contributors,
         categories,
+        num_episodes,
     };
     Ok(channel)
 }
@@ -561,6 +574,7 @@ pub async fn get_subscription_episodes(
         LEFT JOIN episode ON episode.channel_id = user_subscriptions.channel_id
         WHERE user_id = $1
         ORDER BY published DESC
+        LIMIT 20
         "#,
         user_id
     )

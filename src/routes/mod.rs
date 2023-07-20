@@ -5,7 +5,7 @@ use self::auth::*;
 use crate::{config::AppContext, models::User};
 use async_redis_session::RedisSessionStore;
 use axum::{
-    routing::{get, put},
+    routing::{delete, get, put},
     Router,
 };
 use axum_login::{axum_sessions::SessionLayer, AuthLayer, RequireAuthorizationLayer, SqlxStore};
@@ -17,12 +17,8 @@ type RequireAuth = RequireAuthorizationLayer<Uuid, User>;
 
 pub fn build_router() -> Router<AppContext> {
     let channel_routes = Router::new()
-        .route(
-            "/",
-            get(get_subscriptions)
-                .post(add_subscription)
-                .delete(delete_channel),
-        )
+        .route("/", get(get_subscriptions).post(add_subscription))
+        .route("/:id", get(get_subscription).delete(delete_channel))
         .route_layer(RequireAuth::login());
 
     let feed_routes = Router::new()

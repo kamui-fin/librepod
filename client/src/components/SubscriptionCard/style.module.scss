@@ -11,7 +11,7 @@
     &.unwrapped:hover {
         cursor: pointer;
         filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
-        transition: all .1s linear;
+        transition: all 0.1s linear;
     }
 
     img {
@@ -44,11 +44,11 @@
     right: 0.4rem;
 
     width: 1.6375rem;
-    height: 1.6375rem; 
+    height: 1.6375rem;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: .2rem;
+    padding: 0.2rem;
 
     svg {
         width: 1rem;
@@ -74,6 +74,7 @@
     border-radius: 0.4375rem;
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
     outline: none;
+    z-index: 999;
 
     .menuItem {
         margin: 0.5rem 1rem;

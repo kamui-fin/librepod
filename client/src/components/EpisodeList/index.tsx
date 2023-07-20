@@ -1,14 +1,6 @@
+import { Episode } from "../../lib/types"
 import EpisodeListItem from "./EpisodeListItem"
 import styles from "./style.module.scss"
-
-export interface Episode {
-    img: string
-    title: string
-    channelName: string // change to link
-    description: string
-    date: Date
-    duration: string
-}
 
 interface Props {
     items: Episode[]
@@ -19,7 +11,7 @@ const EpisodeList = ({ items, channelOnly = false }: Props) => {
     const groupByDate = (eps: Episode[]) => {
         let grouped: { [key: string]: Episode[] } = {}
         for (let ep of eps) {
-            const date = ep.date.toLocaleDateString()
+            const date = new Date(ep.published / 1000).toLocaleDateString()
             if (date in grouped) {
                 grouped[date].push(ep)
             } else {

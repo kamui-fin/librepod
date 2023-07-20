@@ -13,19 +13,23 @@ import SubscriptionsPage from "./pages/subscriptions"
 import SettingsPage from "./pages/settings"
 import HistoryPage from "./pages/history"
 import ChannelPage from "./pages/channel"
+import { getFeed, getSubscription, getSubscriptions } from "./lib/api"
 
 const rootPaths = [
     {
         element: <FeedPage />,
         index: true,
+        loader: getFeed,
     },
     {
         path: "/subscriptions/channel/:name",
         element: <ChannelPage />,
+        loader: getSubscription,
     },
     {
         path: "/subscriptions",
         element: <SubscriptionsPage />,
+        loader: getSubscriptions,
     },
     {
         path: "/history",
@@ -41,32 +45,32 @@ const router = createBrowserRouter([
     {
         path: "/",
         element: (
-            <ProtectedRoute>
-                <AuthLayout>
+            <AuthLayout>
+                <ProtectedRoute>
                     <HomePage />
-                </AuthLayout>
-            </ProtectedRoute>
+                </ProtectedRoute>
+            </AuthLayout>
         ),
         children: rootPaths,
     },
     {
         path: "/register",
         element: (
-            <UnprotectedRoute>
-                <AuthLayout>
+            <AuthLayout>
+                <UnprotectedRoute>
                     <RegisterPage />
-                </AuthLayout>
-            </UnprotectedRoute>
+                </UnprotectedRoute>
+            </AuthLayout>
         ),
     },
     {
         path: "/login",
         element: (
-            <UnprotectedRoute>
-                <AuthLayout>
+            <AuthLayout>
+                <UnprotectedRoute>
                     <LoginPage />
-                </AuthLayout>
-            </UnprotectedRoute>
+                </UnprotectedRoute>
+            </AuthLayout>
         ),
     },
 ])
