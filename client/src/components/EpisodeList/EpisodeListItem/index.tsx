@@ -2,14 +2,15 @@ import { Link } from "react-router-dom"
 import styles from "./style.module.scss"
 import { stripHtml } from "string-strip-html"
 import { AiFillPlayCircle } from "react-icons/ai"
-import { Episode } from "../../../lib/types"
+import { Episode, Subscription } from "../../../lib/types"
 
 interface Props {
     item: Episode
+    channel?: Subscription
     channelOnly: boolean
 }
 
-const EpisodeListItem = ({ item, channelOnly }: Props) => {
+const EpisodeListItem = ({ item, channel, channelOnly }: Props) => {
     return (
         <div className={styles.listItem}>
             {channelOnly ? (
@@ -19,16 +20,16 @@ const EpisodeListItem = ({ item, channelOnly }: Props) => {
                     </span>
                     <h3 className={styles.title}>{item.title}</h3>
                     <p className={styles.desc}>
-                        {stripHtml(item.summary.content).result.replace(
-                            /(.{50})..+/,
-                            "$1&hellip;"
-                        )}
+                        {stripHtml(item.summary.content).result.substring(
+                            0,
+                            150
+                        ) + "..."}
                     </p>
                 </div>
             ) : (
                 <>
                     <div className={styles.image}>
-                        <img src={item.channel.logo.uri} />
+                        <img src={channel.logo.uri} />
                     </div>
                     <div className={styles.meta}>
                         <h3 className={styles.title}>{item.title}</h3>
@@ -40,7 +41,7 @@ const EpisodeListItem = ({ item, channelOnly }: Props) => {
                         </p>
                         <Link to={`/subscriptions/channel/${item.source_id}`}>
                             <span className={styles.channel}>
-                                {item.channel.title}
+                                {channel.title}
                             </span>
                         </Link>
                     </div>

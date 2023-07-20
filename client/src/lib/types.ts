@@ -40,7 +40,6 @@ export interface MediaThumbnail {
     time: Duration | null
 }
 
-
 export interface MediaContent {
     url: string | null
     content_type: string | null
@@ -105,4 +104,9 @@ export interface Link {
     href_lang: string | null
     title: string | null
     length: number | null
+}
+
+export interface ChannelEpisodes {
+    channel: Subscription
+    episodes: Episode[]
 }

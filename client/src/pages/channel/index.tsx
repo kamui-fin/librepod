@@ -11,11 +11,11 @@ import { MdSort } from "react-icons/md"
 import ActionTitleBar from "../../components/ActionTitleBar"
 import Divider from "../../components/Divider"
 import ChannelMeta, { Channel } from "../../components/ChannelMeta"
-import { Subscription } from "../../lib/types"
+import { ChannelEpisodes, Subscription } from "../../lib/types"
 import { useLoaderData } from "react-router-dom"
 
 const ChannelPage = () => {
-    const channel: Subscription = useLoaderData()
+    const { channel, episodes }: ChannelEpisodes = useLoaderData()
     return (
         <Layout>
             <ActionTitleBar actions={[<SearchBar text="Find episodes" />]} />
@@ -35,7 +35,7 @@ const ChannelPage = () => {
                         icon={<MdSort />}
                     />
                 </div>
-                {/* <EpisodeList items={channel.episodes} channelOnly /> */}
+                <EpisodeList items={episodes} channels={{}} channelOnly />
             </Layout>
         </Layout>
     )

@@ -1,4 +1,4 @@
-import { Link, useLoaderData } from "react-router-dom"
+import { Link, useLoaderData, useOutletContext } from "react-router-dom"
 import Button from "../../components/Button"
 import Layout from "../../components/Layout"
 import SearchBar from "../../components/Search"
@@ -15,7 +15,8 @@ import { addSubscription } from "../../lib/api"
 const SubscriptionsPage = () => {
     const [showAddModal, setShowAddModal] = useState(false)
     const [addRssLink, setAddRssLink] = useState("")
-    const [subs, setSubs] = useState<Subscription[]>(useLoaderData())
+    const { subsById } = useOutletContext()
+    const [subs, setSubs] = useState<Subscription[]>(Object.values(subsById))
     return (
         <Layout>
             <ActionTitleBar

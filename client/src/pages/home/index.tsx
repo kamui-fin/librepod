@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom"
+import { Outlet, useLoaderData } from "react-router-dom"
 import Sidebar from "../../components/Sidebar"
 import styles from "./style.module.scss"
 import { AiOutlineHome } from "react-icons/ai"
@@ -33,10 +33,11 @@ const navItems = [
 
 
 const HomePage = () => {
+    const feedData  = useLoaderData()
     return (
         <div className={styles.container}>
             <Sidebar navItems={navItems} />
-            <Outlet />
+            <Outlet context={feedData} />
         </div>
     )
 }

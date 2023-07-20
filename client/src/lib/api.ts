@@ -1,5 +1,5 @@
 import Axios from "axios"
-import { Episode, Subscription } from "./types"
+import { ChannelEpisodes, Episode, Subscription } from "./types"
 import { LoaderFunctionArgs } from "react-router-dom"
 
 export interface OkResponse {
@@ -12,10 +12,10 @@ export const axios = Axios.create({
 })
 
 axios.interceptors.response.use(
-    function (response) {
+    function(response) {
         return response
     },
-    function (error) {
+    function(error) {
         if (error.response.status === 401) {
             localStorage.removeItem("user")
         }
@@ -30,10 +30,15 @@ export const getSubscriptions = async (): Promise<Subscription[]> => {
 
 export const getSubscription = async (
     context: LoaderFunctionArgs
-): Promise<Subscription> => {
+): Promise<ChannelEpisodes> => {
     const id = context.params.name
-    const { data } = await axios.get<Subscription>(`/channel/${id}`)
-    return data
+    try {
+        const { data } = await axios.get<ChannelEpisodes>(`/channel/${id}`)
+        return data
+    } catch(e) {
+        console.log(e)
+        return {}
+    }
 }
 
 export const addSubscription = async (
@@ -55,11 +60,26 @@ export const deleteSubscription = async (
 export const getFeed = async (): Promise<Episode[]> => {
     try {
         const { data } = await axios.get<Episode[]>("/feed")
-        for (let episode of data) {
-            episode.channel = await getSubscription(episode.source_id)
-        }
         return data
-    } catch {
+    } catch (e) {
         return []
+    }
+}
+
+export const feedLoader = async () => {
+    try {
+        const episodes = await getFeed();
+        const subs = await getSubscriptions();
+        const subsById = {}
+        for (let sub of subs) {
+            subsById[sub.id] = sub
+        }
+        return {
+            episodes,
+            subsById
+        }
+    } catch (e) {
+        console.log(e)
+        return {}
     }
 }

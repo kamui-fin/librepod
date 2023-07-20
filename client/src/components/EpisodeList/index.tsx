@@ -1,13 +1,14 @@
-import { Episode } from "../../lib/types"
+import { Episode, Subscription } from "../../lib/types"
 import EpisodeListItem from "./EpisodeListItem"
 import styles from "./style.module.scss"
 
 interface Props {
     items: Episode[]
+    channels: { [key: string]: Subscription }
     channelOnly?: boolean
 }
 
-const EpisodeList = ({ items, channelOnly = false }: Props) => {
+const EpisodeList = ({ items, channels, channelOnly = false }: Props) => {
     const groupByDate = (eps: Episode[]) => {
         let grouped: { [key: string]: Episode[] } = {}
         for (let ep of eps) {
@@ -34,7 +35,7 @@ const EpisodeList = ({ items, channelOnly = false }: Props) => {
                         <h2 className={styles.dateHeader}>{date}</h2>
                         <div className={styles.list}>
                             {items.map((item) => (
-                                <EpisodeListItem item={item} />
+                                <EpisodeListItem item={item} channel={channels[item.source_id]} />
                             ))}
                         </div>
                     </div>

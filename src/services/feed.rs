@@ -563,6 +563,25 @@ pub async fn expand_db_episode(episode: DbPodcastEpisode, pool: &PgPool) -> Resu
     Ok(episode)
 }
 
+pub async fn get_channel_episodes(channel_id: &str, pool: &PgPool) -> Result<Vec<PodcastEpisode>> {
+    let episodes = sqlx::query_as!(
+        DbPodcastEpisode,
+        r#"
+        SELECT * FROM episode
+        WHERE channel_id = $1
+        ORDER BY published DESC
+        LIMIT 20
+        "#,
+        channel_id
+    )
+    .fetch_all(pool)
+    .await?;
+    let episodes = future::try_join_all(episodes.into_iter().map(|c| expand_db_episode(c, pool)))
+        .await
+        .unwrap();
+    Ok(episodes)
+}
+
 pub async fn get_subscription_episodes(
     user_id: Uuid,
     pool: &PgPool,

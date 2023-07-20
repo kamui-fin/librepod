@@ -28,7 +28,11 @@ pub async fn get_subscription(
     State(state): State<AppContext>,
 ) -> Result<impl IntoResponse, AppError> {
     let channel = feed::get_channel(&id, &state.pool).await?;
-    Ok(Json(channel))
+    let episodes = feed::get_channel_episodes(&id, &state.pool).await?;
+    Ok(Json(json!({
+        "channel": channel,
+        "episodes": episodes
+    })))
 }
 
 pub async fn add_subscription(
