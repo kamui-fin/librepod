@@ -21,6 +21,7 @@ import {
     getSubscriptions,
 } from "./lib/api"
 import EpisodePage from "./pages/episode"
+import QueuePage from "./pages/queue"
 
 const rootPaths = [
     {
@@ -40,6 +41,10 @@ const rootPaths = [
     {
         path: "/subscriptions",
         element: <SubscriptionsPage />,
+    },
+    {
+        path: "/queue",
+        element: <QueuePage />,
     },
     {
         path: "/history",

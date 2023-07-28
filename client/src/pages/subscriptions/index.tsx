@@ -34,7 +34,7 @@ const SubscriptionsPage = () => {
                 ]}
             />
             <div className={styles.subs}>
-                {subs.length == 0 ? (
+                {subs.length === 0 ? (
                     <p>No channels found.</p>
                 ) : (
                     subs.map((sub) => (

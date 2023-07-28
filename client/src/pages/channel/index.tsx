@@ -20,7 +20,16 @@ const ChannelPage = () => {
     const [episodeData, setEpisodeData] = useState(episodes)
     return (
         <Layout>
-            <ActionTitleBar actions={[<SearchBar text="Find episodes" data={episodes} cmpKeys={["title", "description"]} onSearch={(filtered) => setEpisodeData(filtered)}/>]} />
+            <ActionTitleBar
+                actions={[
+                    <SearchBar
+                        text="Find episodes"
+                        data={episodes}
+                        cmpKeys={["title", "description"]}
+                        onSearch={(filtered) => setEpisodeData(filtered)}
+                    />,
+                ]}
+            />
             <Layout inner>
                 <ChannelMeta channel={channel} />
                 <p className={styles.epCount}>
@@ -36,13 +45,13 @@ const ChannelPage = () => {
                         items={["Most Recent", "Least Recent"]}
                         icon={<MdSort />}
                         onDone={(text) => {
-                            if (text == "Most Recent") {
+                            if (text === "Most Recent") {
                                 setEpisodeData(
                                     [...episodeData].sort(
                                         (a, b) => b.published - a.published
                                     )
                                 )
-                            } else if (text == "Least Recent") {
+                            } else if (text === "Least Recent") {
                                 setEpisodeData(
                                     [...episodeData].sort(
                                         (a, b) => a.published - b.published

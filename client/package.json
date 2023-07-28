@@ -24,6 +24,7 @@
     "react-range": "^1.8.14",
     "react-router-dom": "^6.14.1",
     "react-toastify": "^9.1.3",
+    "react-use-audio-player": "^2.1.0",
     "string-strip-html": "^13.4.2",
     "zod": "^3.21.4",
     "zod-formik-adapter": "^1.2.0"
