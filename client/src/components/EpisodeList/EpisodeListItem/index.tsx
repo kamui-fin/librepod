@@ -3,6 +3,7 @@ import styles from "./style.module.scss"
 import { stripHtml } from "string-strip-html"
 import { AiFillPlayCircle } from "react-icons/ai"
 import { Episode, Subscription } from "../../../lib/types"
+import { getHumanDate } from "../../../lib/utils"
 
 interface Props {
     item: Episode
@@ -16,7 +17,7 @@ const EpisodeListItem = ({ item, channel, channelOnly }: Props) => {
             {channelOnly ? (
                 <div className={styles.meta}>
                     <span className={styles.channel}>
-                        {new Date(item.published / 1000).toLocaleDateString()}
+                        {getHumanDate(item.published)}
                     </span>
                     <Link to={`/episode/${item.id}`}>
                         <h3 className={styles.title}>{item.title}</h3>

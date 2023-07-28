@@ -41,6 +41,7 @@
 
 .buttons {
     display: flex;
+    align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
 }
@@ -73,5 +74,17 @@
         opacity: 80%;
         transform: scale(1.1);
         transition: all 100ms linear;
+    }
+}
+
+.iconButton {
+    display: flex;
+    align-items: center;
+    color: $accent-secondary;
+    gap: 0.6rem;
+    font-size: 2rem;
+
+    &:hover {
+        cursor: pointer;
     }
 }

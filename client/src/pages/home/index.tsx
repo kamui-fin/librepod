@@ -6,6 +6,7 @@ import {
     MdOutlineRssFeed,
     MdOutlineHistory,
     MdOutlineSettings,
+    MdQueueMusic,
 } from "react-icons/md"
 
 const navItems = [
@@ -20,6 +21,11 @@ const navItems = [
         text: "Subscriptions",
     },
     {
+        to: "/queue",
+        icon: <MdQueueMusic />,
+        text: "Queue",
+    },
+    {
         to: "/history",
         icon: <MdOutlineHistory />,
         text: "Play History",
@@ -30,7 +36,6 @@ const navItems = [
         text: "Settings",
     },
 ]
-
 
 const HomePage = () => {
     const feedData = useLoaderData()

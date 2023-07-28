@@ -15,6 +15,7 @@
     "classnames": "^2.3.2",
     "formik": "^2.4.2",
     "html-react-parser": "^4.2.0",
+    "luxon": "^3.3.0",
     "normalize.css": "^8.0.1",
     "rc-slider": "^10.2.1",
     "react": "^18.2.0",
@@ -28,6 +29,7 @@
     "zod-formik-adapter": "^1.2.0"
   },
   "devDependencies": {
+    "@types/luxon": "^3.3.1",
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",
     "@typescript-eslint/eslint-plugin": "^5.61.0",

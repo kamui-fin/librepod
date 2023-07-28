@@ -25,21 +25,26 @@ const SubscriptionsPage = () => {
                     <Button onClick={() => setShowAddModal(true)}>
                         <IoMdAdd />
                     </Button>,
-                    <SearchBar text="Search channels" />,
+                    <SearchBar
+                        text="Search channels"
+                        data={Object.values(subsById)}
+                        cmpKeys={["title", "description"]}
+                        onSearch={(filtered) => setSubs(filtered)}
+                    />,
                 ]}
             />
             <div className={styles.subs}>
                 {subs.length == 0 ? (
-                    <p>Currently, there are no subscribed channels.</p>
+                    <p>No channels found.</p>
                 ) : (
-                        subs.map((sub) => (
-                            <SubscriptionCard
-                                sub={sub}
-                                onDelete={() => {
-                                    setSubs(subs.filter((s) => s.id !== sub.id))
-                                }}
-                            />
-                        ))
+                    subs.map((sub) => (
+                        <SubscriptionCard
+                            sub={sub}
+                            onDelete={() => {
+                                setSubs(subs.filter((s) => s.id !== sub.id))
+                            }}
+                        />
+                    ))
                 )}
             </div>
             <Modal

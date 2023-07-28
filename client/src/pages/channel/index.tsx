@@ -20,7 +20,7 @@ const ChannelPage = () => {
     const [episodeData, setEpisodeData] = useState(episodes)
     return (
         <Layout>
-            <ActionTitleBar actions={[<SearchBar text="Find episodes" />]} />
+            <ActionTitleBar actions={[<SearchBar text="Find episodes" data={episodes} cmpKeys={["title", "description"]} onSearch={(filtered) => setEpisodeData(filtered)}/>]} />
             <Layout inner>
                 <ChannelMeta channel={channel} />
                 <p className={styles.epCount}>

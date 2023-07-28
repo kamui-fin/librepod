@@ -17,7 +17,7 @@ const HistoryPage = () => {
             <Layout inner>
                 <ActionTitleBar
                     title="Listen History"
-                    actions={[<SearchBar text="Find episodes" />]}
+                    actions={[<SearchBar text="Find episodes" data={history} cmpKeys={["title", "description"]} onSearch={(filtered) => setHistory(filtered)}/>]}
                 />
                 <div
                     className={styles.clearHistory}

@@ -1,4 +1,5 @@
 import { Episode, Subscription } from "../../lib/types"
+import { getHumanDate } from "../../lib/utils"
 import EpisodeListItem from "./EpisodeListItem"
 import styles from "./style.module.scss"
 
@@ -12,7 +13,7 @@ const EpisodeList = ({ items, channels, channelOnly = false }: Props) => {
     const groupByDate = (eps: Episode[]) => {
         let grouped: { [key: string]: Episode[] } = {}
         for (let ep of eps) {
-            const date = new Date(ep.published / 1000).toLocaleDateString()
+            const date = getHumanDate(ep.published)
             if (date in grouped) {
                 grouped[date].push(ep)
             } else {

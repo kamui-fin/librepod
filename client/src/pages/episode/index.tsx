@@ -6,6 +6,9 @@ import ActionTitleBar from "../../components/ActionTitleBar"
 import Divider from "../../components/Divider"
 import parse from "html-react-parser"
 import { AiFillPlayCircle } from "react-icons/ai"
+import { getHumanDate } from "../../lib/utils"
+import ContextMenu from "../../components/ContextMenu"
+import { MdPlaylistAdd } from "react-icons/md"
 
 const EpisodePage = () => {
     const { episode, channel }: ChannelEpisode = useLoaderData()
@@ -22,11 +25,7 @@ const EpisodePage = () => {
                         >
                             <h3>{channel.channel.title}</h3>
                         </Link>
-                        <p>
-                            {new Date(
-                                episode.published / 1000
-                            ).toLocaleDateString()}
-                        </p>
+                        <p>{getHumanDate(episode.published)}</p>
                     </div>
                 </div>
                 <h1 className={styles.episodeTitle}>{episode.title}</h1>
@@ -37,6 +36,10 @@ const EpisodePage = () => {
                             <span>28 min</span>
                         </button>
                     </div>
+                    <div className={styles.iconButton}>
+                        <MdPlaylistAdd />
+                    </div>
+                    <ContextMenu />
                 </div>
                 <Divider />
                 <div className={styles.content}>{parse(episode.content)}</div>
