@@ -13,7 +13,14 @@ import SubscriptionsPage from "./pages/subscriptions"
 import SettingsPage from "./pages/settings"
 import HistoryPage from "./pages/history"
 import ChannelPage from "./pages/channel"
-import { feedLoader, getFeed, getSubscription, getSubscriptions } from "./lib/api"
+import {
+    feedLoader,
+    getEpisode,
+    getFeed,
+    getSubscription,
+    getSubscriptions,
+} from "./lib/api"
+import EpisodePage from "./pages/episode"
 
 const rootPaths = [
     {
@@ -24,6 +31,11 @@ const rootPaths = [
         path: "/subscriptions/channel/:name",
         element: <ChannelPage />,
         loader: getSubscription,
+    },
+    {
+        path: "/episode/:name",
+        element: <EpisodePage />,
+        loader: getEpisode,
     },
     {
         path: "/subscriptions",
@@ -50,7 +62,7 @@ const router = createBrowserRouter([
             </AuthLayout>
         ),
         children: rootPaths,
-        loader: feedLoader
+        loader: feedLoader,
     },
     {
         path: "/register",

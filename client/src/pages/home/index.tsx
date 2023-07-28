@@ -33,7 +33,7 @@ const navItems = [
 
 
 const HomePage = () => {
-    const feedData  = useLoaderData()
+    const feedData = useLoaderData()
     return (
         <div className={styles.container}>
             <Sidebar navItems={navItems} />

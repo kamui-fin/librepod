@@ -7,6 +7,13 @@
     display: flex;
     align-items: center;
 
+    .withChannel {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        flex-grow: 1;
+    }
+
     .meta {
         display: flex;
         flex-direction: column;

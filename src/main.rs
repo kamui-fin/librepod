@@ -62,6 +62,7 @@ async fn start_server() -> Result<()> {
 
     let session_store = RedisSessionStore::new("redis://127.0.0.1")?;
     let session_layer = SessionLayer::new(session_store, &secret)
+        .with_session_ttl(Some(Duration::from_secs(60 * 60 * 24 * 30)))
         .with_same_site_policy(axum_login::axum_sessions::SameSite::None)
         .with_http_only(true);
 

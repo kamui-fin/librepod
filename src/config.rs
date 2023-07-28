@@ -19,12 +19,15 @@ pub struct Config {
     pub db_url: String,
     #[envconfig(from = "REDIS_URL", default = "redis://127.0.0.1")]
     pub redis_url: String,
+    #[envconfig(from = "IMAGE_STORAGE_PATH", default = "/srv/librepod")]
+    pub image_storage_path: String,
 }
 
 #[derive(Clone)]
 pub struct AppContext {
     pub redis_manager: ConnectionManager,
     pub pool: PgPool,
+    pub config: Config,
 }
 
 impl Config {
@@ -70,5 +73,6 @@ pub async fn init_context() -> AppContext {
     AppContext {
         pool,
         redis_manager,
+        config,
     }
 }

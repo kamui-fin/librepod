@@ -29,14 +29,18 @@ const SubscriptionsPage = () => {
                 ]}
             />
             <div className={styles.subs}>
-                {subs.map((sub) => (
-                    <SubscriptionCard
-                        sub={sub}
-                        onDelete={() => {
-                            setSubs(subs.filter((s) => s.id !== sub.id))
-                        }}
-                    />
-                ))}
+                {subs.length == 0 ? (
+                    <p>Currently, there are no subscribed channels.</p>
+                ) : (
+                        subs.map((sub) => (
+                            <SubscriptionCard
+                                sub={sub}
+                                onDelete={() => {
+                                    setSubs(subs.filter((s) => s.id !== sub.id))
+                                }}
+                            />
+                        ))
+                )}
             </div>
             <Modal
                 title="Add Subscription"

@@ -18,34 +18,36 @@ const EpisodeListItem = ({ item, channel, channelOnly }: Props) => {
                     <span className={styles.channel}>
                         {new Date(item.published / 1000).toLocaleDateString()}
                     </span>
-                    <h3 className={styles.title}>{item.title}</h3>
+                    <Link to={`/episode/${item.id}`}>
+                        <h3 className={styles.title}>{item.title}</h3>
+                    </Link>
                     <p className={styles.desc}>
-                        {stripHtml(item.summary.content).result.substring(
-                            0,
-                            150
-                        ) + "..."}
+                        {stripHtml(item.description).result.substring(0, 150) +
+                            "..."}
                     </p>
                 </div>
             ) : (
-                <>
+                <div className={styles.withChannel}>
                     <div className={styles.image}>
-                        <img src={channel.logo.uri} />
+                        <img src={channel.image} />
                     </div>
                     <div className={styles.meta}>
+                    <Link to={`/episode/${item.id}`}>
                         <h3 className={styles.title}>{item.title}</h3>
+                        </Link>
                         <p className={styles.desc}>
-                            {stripHtml(item.summary.content).result.substring(
+                            {stripHtml(item.description).result.substring(
                                 0,
                                 130
                             ) + "..."}
                         </p>
-                        <Link to={`/subscriptions/channel/${item.source_id}`}>
+                        <Link to={`/subscriptions/channel/${item.channel_id}`}>
                             <span className={styles.channel}>
                                 {channel.title}
                             </span>
                         </Link>
                     </div>
-                </>
+                </div>
             )}
             <div className={styles.play}>
                 <button>

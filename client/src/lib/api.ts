@@ -1,5 +1,5 @@
 import Axios from "axios"
-import { ChannelEpisodes, Episode, Subscription } from "./types"
+import { ChannelEpisode, ChannelEpisodes, Episode, Subscription } from "./types"
 import { LoaderFunctionArgs } from "react-router-dom"
 
 export interface OkResponse {
@@ -12,10 +12,10 @@ export const axios = Axios.create({
 })
 
 axios.interceptors.response.use(
-    function(response) {
+    function (response) {
         return response
     },
-    function(error) {
+    function (error) {
         if (error.response.status === 401) {
             localStorage.removeItem("user")
         }
@@ -33,9 +33,11 @@ export const getSubscription = async (
 ): Promise<ChannelEpisodes> => {
     const id = context.params.name
     try {
-        const { data } = await axios.get<ChannelEpisodes>(`/channel/${id}`)
+        const { data } = await axios.get<ChannelEpisodes>(
+            `/channel/${id}`
+        )
         return data
-    } catch(e) {
+    } catch (e) {
         console.log(e)
         return {}
     }
@@ -66,20 +68,57 @@ export const getFeed = async (): Promise<Episode[]> => {
     }
 }
 
+export const getEpisode = async (
+    context: LoaderFunctionArgs
+): Promise<ChannelEpisode> => {
+    const id = context.params.name
+    try {
+        const { data } = await axios.get<Episode>(`/feed/${id}`)
+        return {
+            episode: data,
+            channel: (
+                await axios.get<ChannelEpisodes>(`/channel/${data.channel_id}`)
+            ).data,
+        }
+    } catch (e) {
+        return {}
+    }
+}
+
+export const getHistory = async (): Promise<Episode[]> => {
+    try {
+        const { data } = await axios.get<Episode[]>("/user/history")
+        return data
+    } catch (e) {
+        return []
+    }
+}
+
 export const feedLoader = async () => {
     try {
-        const episodes = await getFeed();
-        const subs = await getSubscriptions();
+        const history = await getHistory()
+        const episodes = await getFeed()
+        const subs = await getSubscriptions()
         const subsById = {}
         for (let sub of subs) {
             subsById[sub.id] = sub
         }
         return {
             episodes,
-            subsById
+            subsById,
+            history,
         }
     } catch (e) {
         console.log(e)
         return {}
+    }
+}
+
+export const clearHistory = async (): Promise<OkResponse> => {
+    try {
+        const { data } = await axios.delete<OkResponse>("/user/history")
+        return data
+    } catch (e) {
+        return { ok: false }
     }
 }

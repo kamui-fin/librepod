@@ -12,19 +12,17 @@ const ChannelMeta = ({ channel }: Props) => {
     return (
         <div className={styles.channelMeta}>
             <div className={styles.image}>
-                <img src={channel.logo.uri} />
+                <img src={channel.image} />
             </div>
             <div className={styles.textMeta}>
                 <h1 className={styles.title}>{channel.title}</h1>
-                <div className={styles.authors}>
-                    {channel.authors.map((p) => p.name).join(", ")}
-                </div>
+                <div className={styles.authors}>{channel.author}</div>
                 <div className={styles.link}>
                     <BiLinkAlt />
                     <span>{channel.website_link}</span>
                 </div>
                 <div className={styles.desc}>
-                    {stripHtml(channel.description.content).result}
+                    {stripHtml(channel.description).result}
                 </div>
             </div>
         </div>

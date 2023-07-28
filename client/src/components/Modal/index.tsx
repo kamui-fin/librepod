@@ -37,7 +37,13 @@ const Modal = ({
                     >
                         Cancel
                     </Button>
-                    <Button onClick={() => onDone()} secondary={!primary}>
+                    <Button
+                        onClick={() => {
+                            onDone()
+                            setOpen(false)
+                        }}
+                        secondary={!primary}
+                    >
                         {actionName}
                     </Button>
                 </div>

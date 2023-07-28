@@ -13,9 +13,11 @@ import Divider from "../../components/Divider"
 import ChannelMeta, { Channel } from "../../components/ChannelMeta"
 import { ChannelEpisodes, Subscription } from "../../lib/types"
 import { useLoaderData } from "react-router-dom"
+import { useState } from "react"
 
 const ChannelPage = () => {
     const { channel, episodes }: ChannelEpisodes = useLoaderData()
+    const [episodeData, setEpisodeData] = useState(episodes)
     return (
         <Layout>
             <ActionTitleBar actions={[<SearchBar text="Find episodes" />]} />
@@ -33,9 +35,24 @@ const ChannelPage = () => {
                     <Select
                         items={["Most Recent", "Least Recent"]}
                         icon={<MdSort />}
+                        onDone={(text) => {
+                            if (text == "Most Recent") {
+                                setEpisodeData(
+                                    [...episodeData].sort(
+                                        (a, b) => b.published - a.published
+                                    )
+                                )
+                            } else if (text == "Least Recent") {
+                                setEpisodeData(
+                                    [...episodeData].sort(
+                                        (a, b) => a.published - b.published
+                                    )
+                                )
+                            }
+                        }}
                     />
                 </div>
-                <EpisodeList items={episodes} channels={{}} channelOnly />
+                <EpisodeList items={episodeData} channels={{}} channelOnly />
             </Layout>
         </Layout>
     )

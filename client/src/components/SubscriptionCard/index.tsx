@@ -13,7 +13,7 @@ interface Props {
 }
 
 const SubscriptionCard = ({ sub, onDelete }: Props) => {
-    const { id, logo, title, num_episodes } = sub
+    const { id, image, title, num_episodes } = sub
     const [openContext, setOpenContext] = useState<boolean>(false)
     const focusRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
@@ -30,7 +30,7 @@ const SubscriptionCard = ({ sub, onDelete }: Props) => {
                     [styles.unwrapped]: !openContext,
                 })}
             >
-                <img src={logo.uri} />
+                <img src={image} />
                 <Link to={`/subscriptions/channel/${id}`}>
                     <h3>{title}</h3>
                 </Link>

@@ -23,6 +23,7 @@ pub fn build_router() -> Router<AppContext> {
 
     let feed_routes = Router::new()
         .route("/", get(retrieve_feed))
+        .route("/:id", get(get_episode))
         .route("/refresh", put(refresh_feed))
         .route_layer(RequireAuth::login());
 
@@ -33,9 +34,14 @@ pub fn build_router() -> Router<AppContext> {
         .route("/register", put(register_user))
         .route("/login", put(login_user));
 
+    let user_routes = Router::new()
+        .route("/history", get(get_history).delete(clear_history))
+        .route_layer(RequireAuth::login());
+
     Router::new()
         .route("/", get(|| async { "Hello, World!" }))
         .nest("/channel", channel_routes)
         .nest("/feed", feed_routes)
         .nest("/auth", auth_routes)
+        .nest("/user", user_routes)
 }

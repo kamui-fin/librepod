@@ -5,39 +5,13 @@ import Layout from "../../components/Layout"
 import ActionTitleBar from "../../components/ActionTitleBar"
 import Modal from "../../components/Modal"
 import { useState } from "react"
-
-const data: Episode[] = [
-    {
-        img: "https://fdfs.xmcdn.com/group53/M08/04/7F/wKgLfFxFi1DyK_sOAAIVVH_yP2g776.jpg",
-        title: "4 Tips for Recruiting Top Talent to Join Your Team",
-        description:
-            "If you’re stretched thin and having trouble recruiting the right people to join your team, it can feel like an uphill battle. You have to keep doing the work at hand while taking on the tim...",
-        channelName: "纽约文化沙龙",
-        date: new Date(),
-        duration: "28 min",
-    },
-    {
-        img: "https://fdfs.xmcdn.com/group53/M08/04/7F/wKgLfFxFi1DyK_sOAAIVVH_yP2g776.jpg",
-        title: "4 Tips for Recruiting Top Talent to Join Your Team",
-        description:
-            "If you’re stretched thin and having trouble recruiting the right people to join your team, it can feel like an uphill battle. You have to keep doing the work at hand while taking on the tim...",
-        channelName: "纽约文化沙龙",
-        date: new Date(new Date().setDate(new Date().getDate() - 5)),
-        duration: "28 min",
-    },
-    {
-        img: "https://fdfs.xmcdn.com/group53/M08/04/7F/wKgLfFxFi1DyK_sOAAIVVH_yP2g776.jpg",
-        title: "4 Tips for Recruiting Top Talent to Join Your Team",
-        description:
-            "If you’re stretched thin and having trouble recruiting the right people to join your team, it can feel like an uphill battle. You have to keep doing the work at hand while taking on the tim...",
-        channelName: "纽约文化沙龙",
-        date: new Date(new Date().setDate(new Date().getDate() - 10)),
-        duration: "28 min",
-    },
-]
+import { useOutletContext } from "react-router-dom"
+import { clearHistory } from "../../lib/api"
 
 const HistoryPage = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false)
+    const { history, subsById } = useOutletContext()
+    const [currHistory, setHistory] = useState(history)
     return (
         <Layout>
             <Layout inner>
@@ -51,7 +25,7 @@ const HistoryPage = () => {
                 >
                     <span>Clear History</span>
                 </div>
-                <EpisodeList items={data} />
+                <EpisodeList items={currHistory} channels={subsById} />
                 {showConfirmModal && (
                     <Modal
                         title="Clear History"
@@ -65,6 +39,11 @@ const HistoryPage = () => {
                         primary={true}
                         open={showConfirmModal}
                         setOpen={setShowConfirmModal}
+                        onDone={async () => {
+                            const res = clearHistory()
+                            console.log(res)
+                            setHistory([])
+                        }}
                     />
                 )}
             </Layout>

@@ -21,6 +21,14 @@ const EpisodeList = ({ items, channels, channelOnly = false }: Props) => {
         }
         return grouped
     }
+
+    if (items.length == 0) {
+        return (
+            <div className={styles.container}>
+                <p>No episodes were found.</p>
+            </div>
+        )
+    }
     return (
         <div className={styles.container}>
             {channelOnly ? (
@@ -35,7 +43,10 @@ const EpisodeList = ({ items, channels, channelOnly = false }: Props) => {
                         <h2 className={styles.dateHeader}>{date}</h2>
                         <div className={styles.list}>
                             {items.map((item) => (
-                                <EpisodeListItem item={item} channel={channels[item.source_id]} />
+                                <EpisodeListItem
+                                    item={item}
+                                    channel={channels[item.channel_id]}
+                                />
                             ))}
                         </div>
                     </div>
