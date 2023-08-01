@@ -1,0 +1,8 @@
+<svg version="1.1"
+           baseProfile="full"
+           width="300" height="200"
+           xmlns="http://www.w3.org/2000/svg">
+
+            <rect width="60" height="200" x="0" fill="#f05454" id="#f05454" /><rect width="60" height="200" x="60" fill="#ffd369" id="#ffd369" /><rect width="60" height="200" x="120" fill="#222831" id="#222831" /><rect width="60" height="200" x="180" fill="#2d343f" id="#2d343f" /><rect width="60" height="200" x="240" fill="#eeeeee" id="#eeeeee" />
+
+      </svg>
