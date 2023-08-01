@@ -1,8 +1,7 @@
-<img style="display: block;" src="client/src/assets/logo.svg" alt="LibrePod Logo" title="LibrePod" align="left" height="60" />
+<h1>LibrePod</h1>
 
-#
-
-[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
+[![Licence](https://img.shields.io/github/license/kamui-fin/librepod?style=for-the-badge)](./LICENSE)
+![Figma](https://img.shields.io/badge/figma-%23F24E1E.svg?style=for-the-badge&logo=figma&logoColor=white)
 
 A privacy-friendly, self-hosted podcast aggregator optimized for streaming. Although quite a lofty goal, the idea is to work towards building something similar to a PocketCasts open-source replacement in the long-term.
 
