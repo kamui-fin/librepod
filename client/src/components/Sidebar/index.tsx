@@ -6,16 +6,16 @@ import { useAuth } from "../../lib/useAuth"
 import SidebarPlayer from "../SidebarPlayer"
 
 interface NavItem {
-    to: string;
-    icon: React.ReactNode;
-    text: string;
+    to: string
+    icon: React.ReactNode
+    text: string
 }
 
 interface Props {
-    navItems: NavItem[];
+    navItems: NavItem[]
 }
 
-const Sidebar = ({ navItems }: Props) => {
+const Sidebar = ({ navItems, test }: Props) => {
     const { logout } = useAuth()
     return (
         <aside className={styles.container}>
@@ -43,7 +43,7 @@ const Sidebar = ({ navItems }: Props) => {
                         </a>
                     </div>
                 </ul>
-                <SidebarPlayer />
+                <SidebarPlayer test={test} />
             </nav>
         </aside>
     )

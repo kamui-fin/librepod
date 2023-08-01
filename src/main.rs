@@ -57,18 +57,21 @@ async fn start_server() -> Result<()> {
 
     start_fetch_feed_job().await?;
 
-    let mut secret = [0; 64];
-    rand::thread_rng().fill(&mut secret);
+    /* let mut secret = [0; 64];
+    rand::thread_rng().fill(&mut secret); */
+
+    let secret = b"please do not hardcode your secret; instead use a
+    cryptographically secure value";
 
     let session_store = RedisSessionStore::new("redis://127.0.0.1")?;
-    let session_layer = SessionLayer::new(session_store, &secret)
+    let session_layer = SessionLayer::new(session_store, secret)
         .with_session_ttl(Some(Duration::from_secs(60 * 60 * 24 * 30)))
         .with_same_site_policy(axum_login::axum_sessions::SameSite::None)
         .with_http_only(true);
 
     let user_store = PostgresStore::<User>::new(state.pool.clone())
         .with_query("SELECT * FROM account WHERE id = $1");
-    let auth_layer = AuthLayer::new(user_store, &secret);
+    let auth_layer = AuthLayer::new(user_store, secret);
 
     let cors = CorsLayer::very_permissive();
 

@@ -14,8 +14,10 @@ import ChannelMeta, { Channel } from "../../components/ChannelMeta"
 import { ChannelEpisodes, Subscription } from "../../lib/types"
 import { useLoaderData } from "react-router-dom"
 import { useState } from "react"
+import { usePlayerContext } from "../../lib/usePlayer"
 
 const ChannelPage = () => {
+    const { queueFromList } = usePlayerContext()
     const { channel, episodes }: ChannelEpisodes = useLoaderData()
     const [episodeData, setEpisodeData] = useState(episodes)
     return (
@@ -37,7 +39,9 @@ const ChannelPage = () => {
                 </p>
                 <Divider />
                 <div className={cx(styles.actions, styles.spaceBottom)}>
-                    <Button secondary>
+                    <Button secondary onClick={() => {
+                        queueFromList(episodeData)
+                    }}>
                         <BsFillPlayFill />
                         <span>Play All</span>
                     </Button>

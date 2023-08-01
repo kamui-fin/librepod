@@ -1,31 +1,49 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { Duration } from "luxon"
 import { useGlobalAudioPlayer } from "react-use-audio-player"
+import { Episode } from "./types"
+import { axios } from "./api"
 
 const PlayerContext = React.createContext({})
 
-export interface QueueItem {
-    audioUrl: string
-    elapsedTime: Duration
-}
-
 export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
-    const [queue, setQueue] = React.useState<QueueItem[]>([])
-    const [stack, setStack] = React.useState<QueueItem[]>([]) // used for temporary history
-    const [currentEpisode, setCurrentEpisode] =
-        React.useState<QueueItem | null>(null) // used for temporary history
-    const { load, getPosition, duration, seek, stop, src, paused, error } =
-        useGlobalAudioPlayer()
+    const [queue, setQueue] = React.useState<Episode[]>([])
+    const [stack, setStack] = React.useState<Episode[]>([]) // used for temporary history
+    const [currentDuration, setCurrentDuration] = React.useState<Duration>(
+        Duration.fromMillis(0)
+    ) // used for temporary history
+    const [currentEpisode, setCurrentEpisode] = React.useState<Episode | null>(
+        null
+    ) // used for temporary history
+    const {
+        load,
+        getPosition,
+        duration,
+        seek,
+        stop,
+        src,
+        paused,
+        error,
+        pause,
+        play,
+    } = useGlobalAudioPlayer()
     const frameRef = useRef<number>()
 
-    const addToQueue = (episode: QueueItem) => {
+    const queueFromList = (episodes: Episode[]) => {
+        if (!currentEpisode) {
+            setCurrentEpisode(episodes[0])
+        }
+        setQueue([...queue, ...episodes])
+    }
+
+    const addToQueue = (episode: Episode) => {
         if (!currentEpisode) {
             setCurrentEpisode(episode)
         }
         setQueue([...queue, episode])
     }
 
-    const addToFront = (episode: QueueItem) => {
+    const addToFront = (episode: Episode) => {
         setQueue([episode, ...queue])
         setCurrentEpisode(episode)
     }
@@ -58,17 +76,28 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }
 
-    // keep state position and global audio context position in sync
-    const setCurrentDuration = (elapsedTime: Duration) => {
-        if (currentEpisode) {
-            const newEpisode = { ...currentEpisode, elapsedTime }
-            setCurrentEpisode(newEpisode)
-            setQueue([newEpisode, ...queue.slice(1)])
-        }
+    const clearQueue = () => {
+        setQueue([])
+        setCurrentEpisode(null)
     }
+
+    const getLuxonTotalDuration = () => {
+        return Duration.fromMillis(duration * 1000).shiftTo(
+            "hours",
+            "minutes",
+            "seconds"
+        )
+    }
+
     useEffect(() => {
         const animate = () => {
-            setCurrentDuration(Duration.fromMillis(getPosition() * 1000))
+            setCurrentDuration(
+                Duration.fromMillis(getPosition() * 1000).shiftTo(
+                    "hours",
+                    "minutes",
+                    "seconds"
+                )
+            )
             frameRef.current = requestAnimationFrame(animate)
         }
 
@@ -81,14 +110,21 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }, [getPosition])
 
+    const markPlayed = (episode) => {
+        axios.post(`/history/${episode.id}`)
+    }
+
     useEffect(() => {
         if (!currentEpisode) {
             stop()
-        } else if (currentEpisode.audioUrl !== src) {
-            load(currentEpisode.audioUrl, {
-                autoplay: true,
+        } else if (currentEpisode.audio_link !== src) {
+            load(currentEpisode.audio_link, {
+                autoplay: false,
                 html5: true,
-                onend: playNext,
+                onend: () => {
+                    playNext()
+                    markPlayed(currentEpisode)
+                },
             })
         }
     }, [currentEpisode])
@@ -106,7 +142,16 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
                 currentEpisode,
                 queue,
                 paused,
-                error
+                error,
+                pause,
+                duration,
+                play,
+                getLuxonTotalDuration,
+                getPosition,
+                seek,
+                currentDuration,
+                queueFromList,
+                clearQueue,
             }}
         >
             {children}

@@ -1,27 +1,83 @@
 import { BiSkipNext, BiSkipPrevious } from "react-icons/bi"
 import cx from "classnames"
 import { Range, getTrackBackground } from "react-range"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { MdPause, MdReplay10, MdForward10 } from "react-icons/md"
 import styles from "./style.module.scss"
 import { BsFillPlayFill } from "react-icons/bs"
+import { usePlayerContext } from "../../lib/usePlayer"
+import { useOutletContext } from "react-router-dom"
+import { Duration } from "luxon"
+import { stripHtml } from "string-strip-html"
 
-const SidebarPlayer = () => {
+const SidebarPlayer = ({ test }) => {
     const [values, setValues] = useState([0])
     const [paused, setPaused] = useState(false)
+    const { episodes, subsById } = test
+    const {
+        currentEpisode,
+        duration,
+        addToQueue,
+        pause,
+        play,
+        queue,
+        getLuxonTotalDuration,
+        playNext,
+        playPrevious,
+        skipTenSeconds,
+        replayTenSeconds,
+        seek,
+        currentDuration,
+        queueFromList,
+    } = usePlayerContext()
+
+    useEffect(() => {
+        queueFromList(episodes.slice(0, 6))
+    }, [])
+
+    useEffect(() => {
+        setValues([Math.ceil(currentDuration.as("seconds")) || 0])
+    }, [currentDuration])
+
+    const pauseUnpause = () => {
+        setPaused(!paused)
+        if (!paused) {
+            pause()
+        } else {
+            play()
+        }
+    }
+
+    if (!currentEpisode) {
+        return <></>
+    }
+
     return (
         <div className={styles.player}>
-            <img src="https://crazy.capital/assets/icon-square-normal-dark-cn@4x.png" />
-            <h3>322. 马自达昂克赛拉官降3万...</h3>
-            <p> 别人研究车，而我研究你。一个可以当脱口秀听的汽车电台...</p>
+            <img src={subsById[currentEpisode.channel_id].image} />
+            <h3>{currentEpisode.title.substring(0, 20) + "..."}</h3>
+            <p>
+                {stripHtml(currentEpisode.description).result.substring(0, 20) +
+                    "..."}
+            </p>
             <div className={styles.slider}>
-                <span>12:09</span>
+                <span>{currentDuration.toFormat("hh:mm:ss")}</span>
                 <Range
                     values={values}
                     min={0}
-                    max={60 * 40}
+                    max={duration || 1}
                     step={1}
-                    onChange={(values) => setValues(values)}
+                    onChange={(values) => {
+                        pause()
+                        setPaused(true)
+                        seek(values[0])
+                        setValues(values)
+                    }}
+                    onFinalChange={(values) => {
+                        play()
+                        setPaused(false)
+                        setValues(values)
+                    }}
                     renderTrack={({ props, children }) => (
                         <div
                             {...props}
@@ -32,7 +88,7 @@ const SidebarPlayer = () => {
                                     values,
                                     colors: ["#b8c0cc", "#3c4554"],
                                     min: 0,
-                                    max: 60 * 40,
+                                    max: duration,
                                 }),
                             }}
                         >
@@ -43,25 +99,39 @@ const SidebarPlayer = () => {
                         <div {...props} className={styles.sliderThumb} />
                     )}
                 />
-                <span>-34:58</span>
+                <span>
+                    {getLuxonTotalDuration().toFormat("hh:mm:ss") || "--:--"}
+                </span>
             </div>
             <div className={styles.controls}>
-                <div className={styles.iconOnly}>
+                <div className={styles.iconOnly} onClick={replayTenSeconds}>
                     <MdReplay10 />
                 </div>
-                <div className={styles.circleBtn}>
+                <div
+                    className={styles.circleBtn}
+                    onClick={() => {
+                        playPrevious()
+                        setPaused(false)
+                    }}
+                >
                     <BiSkipPrevious />
                 </div>
                 <div
                     className={cx(styles.circleBtn, styles.pause)}
-                    onClick={() => setPaused(!paused)}
+                    onClick={pauseUnpause}
                 >
                     {paused ? <BsFillPlayFill /> : <MdPause />}
                 </div>
-                <div className={styles.circleBtn}>
+                <div
+                    className={styles.circleBtn}
+                    onClick={() => {
+                        playNext()
+                        setPaused(false)
+                    }}
+                >
                     <BiSkipNext />
                 </div>
-                <div className={styles.iconOnly}>
+                <div className={styles.iconOnly} onClick={skipTenSeconds}>
                     <MdForward10 />
                 </div>
             </div>

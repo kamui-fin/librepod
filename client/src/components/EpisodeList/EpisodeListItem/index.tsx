@@ -4,6 +4,8 @@ import { stripHtml } from "string-strip-html"
 import { AiFillPlayCircle } from "react-icons/ai"
 import { Episode, Subscription } from "../../../lib/types"
 import { getHumanDate } from "../../../lib/utils"
+import { MdPlaylistAdd } from "react-icons/md"
+import { usePlayerContext } from "../../../lib/usePlayer"
 
 interface Props {
     item: Episode
@@ -12,6 +14,7 @@ interface Props {
 }
 
 const EpisodeListItem = ({ item, channel, channelOnly }: Props) => {
+    const { addToQueue, addToFront } = usePlayerContext()
     return (
         <div className={styles.listItem}>
             {channelOnly ? (
@@ -33,8 +36,8 @@ const EpisodeListItem = ({ item, channel, channelOnly }: Props) => {
                         <img src={channel.image} />
                     </div>
                     <div className={styles.meta}>
-                    <Link to={`/episode/${item.id}`}>
-                        <h3 className={styles.title}>{item.title}</h3>
+                        <Link to={`/episode/${item.id}`}>
+                            <h3 className={styles.title}>{item.title}</h3>
                         </Link>
                         <p className={styles.desc}>
                             {stripHtml(item.description).result.substring(
@@ -51,9 +54,13 @@ const EpisodeListItem = ({ item, channel, channelOnly }: Props) => {
                 </div>
             )}
             <div className={styles.play}>
-                <button>
+                <button className={styles.playButton} onClick={() => addToFront(item)}>
                     <AiFillPlayCircle />
-                    <span>28 min</span>
+                    <span>Play</span>
+                </button>
+                <button className={styles.queueButton} onClick={() => addToQueue(item)}>
+                    <MdPlaylistAdd />
+                    <span>Queue</span>
                 </button>
             </div>
         </div>

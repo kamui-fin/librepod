@@ -46,6 +46,30 @@
         border-radius: 0.8125rem;
     }
 
+    .play {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+
+        svg {
+            margin-top: 0.2rem;
+        }
+
+        .playButton {
+            svg {
+                path {
+                    fill: $accent-main;
+                }
+            }
+        }
+
+        .queueButton {
+            svg {
+                font-size: 1.2rem;
+            }
+        }
+    }
+
     .play button {
         min-width: 7rem;
         border-radius: 0.875rem;
@@ -57,17 +81,13 @@
         color: $fg-main;
 
         display: flex;
+        align-items: center;
+        justify-content: center;
         gap: 0.7rem;
 
         span {
             font-size: 0.9125rem;
             font-weight: 400;
-        }
-
-        svg {
-            path {
-                fill: $accent-main;
-            }
         }
 
         &:hover {

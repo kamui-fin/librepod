@@ -99,6 +99,15 @@ pub async fn refresh_feed(
     Ok(Json(json!({"ok": true})))
 }
 
+pub async fn add_history(
+    Extension(user): Extension<User>,
+    Path(id): Path<Uuid>,
+    State(state): State<AppContext>,
+) -> Result<impl IntoResponse, AppError> {
+    feed::mark_played(user.id, id, &state.pool).await?;
+    Ok(Json(json!({"ok": true})))
+}
+
 pub async fn get_history(
     Extension(user): Extension<User>,
     State(state): State<AppContext>,

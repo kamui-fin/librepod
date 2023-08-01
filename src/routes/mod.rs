@@ -5,7 +5,7 @@ use self::auth::*;
 use crate::{config::AppContext, models::User};
 use async_redis_session::RedisSessionStore;
 use axum::{
-    routing::{delete, get, put},
+    routing::{delete, get, post, put},
     Router,
 };
 use axum_login::{axum_sessions::SessionLayer, AuthLayer, RequireAuthorizationLayer, SqlxStore};
@@ -34,8 +34,12 @@ pub fn build_router() -> Router<AppContext> {
         .route("/register", put(register_user))
         .route("/login", put(login_user));
 
+    let history_routes = Router::new()
+        .route("/", get(get_history).delete(clear_history))
+        .route("/:id", post(add_history));
+
     let user_routes = Router::new()
-        .route("/history", get(get_history).delete(clear_history))
+        .nest("/history", history_routes)
         .route_layer(RequireAuth::login());
 
     Router::new()

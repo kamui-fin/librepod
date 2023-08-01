@@ -335,3 +335,18 @@ pub async fn clear_history(user_id: Uuid, pool: &PgPool) -> Result<bool> {
     .await?;
     Ok(result.rows_affected() > 0)
 }
+
+pub async fn mark_played(user_id: Uuid, episode_id: Uuid, pool: &PgPool) -> Result<bool> {
+    let result = sqlx::query_as!(
+        PodcastEpisode,
+        r#"
+        INSERT INTO user_watch_history
+        VALUES($1, $2)
+        "#,
+        user_id,
+        episode_id
+    )
+    .execute(pool)
+    .await?;
+    Ok(result.rows_affected() > 0)
+}

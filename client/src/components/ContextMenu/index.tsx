@@ -3,7 +3,12 @@ import styles from "./style.module.scss"
 import { FiMoreVertical } from "react-icons/fi"
 import cx from "classnames"
 
-const ContextMenu = () => {
+export interface MenuItem {
+    text: string,
+    handler: () => void
+}
+
+const ContextMenu = ({ menuItems }: { menuItems: MenuItem[] }) => {
     const [openContext, setOpenContext] = useState<boolean>(false)
     const focusRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
@@ -31,9 +36,11 @@ const ContextMenu = () => {
                 ref={focusRef}
                 onBlur={() => setOpenContext(false)}
             >
-                <div className={styles.menuItem}>
-                    <span>Delete</span>
-                </div>
+                {menuItems.map(item => (
+                    <div className={styles.menuItem} onClick={item.handler}>
+                        <span>{item.text}</span>
+                    </div>
+                ))}
             </div>
         </div>
     )

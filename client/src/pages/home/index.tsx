@@ -8,6 +8,7 @@ import {
     MdOutlineSettings,
     MdQueueMusic,
 } from "react-icons/md"
+import { PlayerProvider } from "../../lib/usePlayer"
 
 const navItems = [
     {
@@ -40,10 +41,12 @@ const navItems = [
 const HomePage = () => {
     const feedData = useLoaderData()
     return (
-        <div className={styles.container}>
-            <Sidebar navItems={navItems} />
-            <Outlet context={feedData} />
-        </div>
+        <PlayerProvider>
+            <div className={styles.container}>
+                <Sidebar test={feedData} navItems={navItems} />
+                <Outlet context={feedData} />
+            </div>
+        </PlayerProvider>
     )
 }
 
