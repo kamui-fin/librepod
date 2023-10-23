@@ -4,7 +4,7 @@ import { FiMoreVertical } from "react-icons/fi"
 import cx from "classnames"
 
 export interface MenuItem {
-    text: string,
+    text: string
     handler: () => void
 }
 
@@ -36,7 +36,7 @@ const ContextMenu = ({ menuItems }: { menuItems: MenuItem[] }) => {
                 ref={focusRef}
                 onBlur={() => setOpenContext(false)}
             >
-                {menuItems.map(item => (
+                {menuItems.map((item) => (
                     <div className={styles.menuItem} onClick={item.handler}>
                         <span>{item.text}</span>
                     </div>

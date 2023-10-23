@@ -10,10 +10,10 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
     const [queue, setQueue] = React.useState<Episode[]>([])
     const [stack, setStack] = React.useState<Episode[]>([]) // used for temporary history
     const [currentDuration, setCurrentDuration] = React.useState<Duration>(
-        Duration.fromMillis(0)
+        Duration.fromMillis(0),
     ) // used for temporary history
     const [currentEpisode, setCurrentEpisode] = React.useState<Episode | null>(
-        null
+        null,
     ) // used for temporary history
     const {
         load,
@@ -85,7 +85,7 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
         return Duration.fromMillis(duration * 1000).shiftTo(
             "hours",
             "minutes",
-            "seconds"
+            "seconds",
         )
     }
 
@@ -95,8 +95,8 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
                 Duration.fromMillis(getPosition() * 1000).shiftTo(
                     "hours",
                     "minutes",
-                    "seconds"
-                )
+                    "seconds",
+                ),
             )
             frameRef.current = requestAnimationFrame(animate)
         }

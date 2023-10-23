@@ -3,7 +3,9 @@
     padding: 1rem;
     display: flex;
     flex-direction: column;
-    width: fit-content;
+    justify-content: center;
+    align-items: center;
+    width: 200px;
     border-radius: 0.3125rem;
     text-align: center;
     position: relative;
@@ -28,6 +30,9 @@
 
     h3 {
         margin-top: 1rem;
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     p {

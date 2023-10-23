@@ -19,7 +19,11 @@ const Select = ({ icon, onDone, items, defaultIndex = 0 }: Props) => {
                 }}
             >
                 {items.map((item, indx) => (
-                    <option className={styles.item} value={indx} selected={defaultIndex === indx}>
+                    <option
+                        className={styles.item}
+                        value={indx}
+                        selected={defaultIndex === indx}
+                    >
                         {item}
                     </option>
                 ))}

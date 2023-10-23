@@ -20,7 +20,7 @@ axios.interceptors.response.use(
             localStorage.removeItem("user")
         }
         return Promise.reject(error)
-    }
+    },
 )
 
 export const getSubscriptions = async (): Promise<Subscription[]> => {
@@ -29,13 +29,11 @@ export const getSubscriptions = async (): Promise<Subscription[]> => {
 }
 
 export const getSubscription = async (
-    context: LoaderFunctionArgs
+    context: LoaderFunctionArgs,
 ): Promise<ChannelEpisodes> => {
     const id = context.params.name
     try {
-        const { data } = await axios.get<ChannelEpisodes>(
-            `/channel/${id}`
-        )
+        const { data } = await axios.get<ChannelEpisodes>(`/channel/${id}`)
         return data
     } catch (e) {
         console.log(e)
@@ -44,7 +42,7 @@ export const getSubscription = async (
 }
 
 export const addSubscription = async (
-    rssLink: string
+    rssLink: string,
 ): Promise<Subscription> => {
     const { data } = await axios.post<Subscription>("/channel", {
         rss_link: rssLink,
@@ -53,7 +51,7 @@ export const addSubscription = async (
 }
 
 export const deleteSubscription = async (
-    channelId: string
+    channelId: string,
 ): Promise<OkResponse> => {
     const { data } = await axios.delete<OkResponse>(`/channel/${channelId}`)
     return data
@@ -69,7 +67,7 @@ export const getFeed = async (): Promise<Episode[]> => {
 }
 
 export const getEpisode = async (
-    context: LoaderFunctionArgs
+    context: LoaderFunctionArgs,
 ): Promise<ChannelEpisode> => {
     const id = context.params.name
     try {

@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const logout = async () => {
         try {
             await axios.put("/auth/logout")
-        } catch { }
+        } catch {}
         setUser(null)
     }
 
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             login,
             logout,
         }),
-        [user]
+        [user],
     )
     return (
         <AuthContext.Provider value={value}> {children}</AuthContext.Provider>

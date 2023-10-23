@@ -39,9 +39,12 @@ const ChannelPage = () => {
                 </p>
                 <Divider />
                 <div className={cx(styles.actions, styles.spaceBottom)}>
-                    <Button secondary onClick={() => {
-                        queueFromList(episodeData)
-                    }}>
+                    <Button
+                        secondary
+                        onClick={() => {
+                            queueFromList(episodeData)
+                        }}
+                    >
                         <BsFillPlayFill />
                         <span>Play All</span>
                     </Button>
@@ -52,14 +55,14 @@ const ChannelPage = () => {
                             if (text === "Most Recent") {
                                 setEpisodeData(
                                     [...episodeData].sort(
-                                        (a, b) => b.published - a.published
-                                    )
+                                        (a, b) => b.published - a.published,
+                                    ),
                                 )
                             } else if (text === "Least Recent") {
                                 setEpisodeData(
                                     [...episodeData].sort(
-                                        (a, b) => a.published - b.published
-                                    )
+                                        (a, b) => a.published - b.published,
+                                    ),
                                 )
                             }
                         }}

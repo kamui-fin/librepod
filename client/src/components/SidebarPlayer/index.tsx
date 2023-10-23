@@ -12,7 +12,7 @@ import { stripHtml } from "string-strip-html"
 
 const SidebarPlayer = ({ test }) => {
     const [values, setValues] = useState([0])
-    const [paused, setPaused] = useState(false)
+    const [paused, setPaused] = useState(true)
     const { episodes, subsById } = test
     const {
         currentEpisode,

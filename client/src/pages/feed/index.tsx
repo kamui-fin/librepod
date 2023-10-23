@@ -18,21 +18,10 @@ const FeedPage = () => {
     const { queueFromList } = usePlayerContext()
     const [episodeData, setEpisodeData] = useState(episodes)
 
-    const getEpisodeDateDiff = (ep) => (
-        DateTime.fromJSDate(
-            new Date(
-                ep.published / 1000
-            )
-        )
-            .diff(DateTime.now(), [
-                "days",
-                "months",
-                "year",
-                "hours"
-            ])
+    const getEpisodeDateDiff = (ep) =>
+        DateTime.fromJSDate(new Date(ep.published / 1000))
+            .diff(DateTime.now(), ["days", "months", "year", "hours"])
             .toObject()
-    )
-
 
     const filterEpisodes = (text) => {
         switch (text) {
@@ -46,7 +35,7 @@ const FeedPage = () => {
                             diff.days === 0 &&
                             diff.hours >= -24
                         )
-                    })
+                    }),
                 )
             case "2 Weeks":
                 setEpisodeData(
@@ -57,18 +46,15 @@ const FeedPage = () => {
                             diff.months === 0 &&
                             diff.days >= -14
                         )
-                    })
+                    }),
                 )
                 break
             case "Past Month":
                 setEpisodeData(
                     episodes.filter((ep) => {
                         const diff = getEpisodeDateDiff(ep)
-                        return (
-                            diff.years === 0 &&
-                            diff.months >= -1
-                        )
-                    })
+                        return diff.years === 0 && diff.months >= -1
+                    }),
                 )
                 break
             case "All Time":
@@ -83,9 +69,12 @@ const FeedPage = () => {
                 <ActionTitleBar
                     title="Feed"
                     actions={[
-                        <Button secondary onClick={() => {
-                            queueFromList(episodeData)
-                        }}>
+                        <Button
+                            secondary
+                            onClick={() => {
+                                queueFromList(episodeData)
+                            }}
+                        >
                             <BsFillPlayFill />
                             <span>Play All</span>
                         </Button>,

@@ -42,7 +42,7 @@ const EpisodeListItem = ({ item, channel, channelOnly }: Props) => {
                         <p className={styles.desc}>
                             {stripHtml(item.description).result.substring(
                                 0,
-                                130
+                                130,
                             ) + "..."}
                         </p>
                         <Link to={`/subscriptions/channel/${item.channel_id}`}>
@@ -54,11 +54,17 @@ const EpisodeListItem = ({ item, channel, channelOnly }: Props) => {
                 </div>
             )}
             <div className={styles.play}>
-                <button className={styles.playButton} onClick={() => addToFront(item)}>
+                <button
+                    className={styles.playButton}
+                    onClick={() => addToFront(item)}
+                >
                     <AiFillPlayCircle />
                     <span>Play</span>
                 </button>
-                <button className={styles.queueButton} onClick={() => addToQueue(item)}>
+                <button
+                    className={styles.queueButton}
+                    onClick={() => addToQueue(item)}
+                >
                     <MdPlaylistAdd />
                     <span>Queue</span>
                 </button>

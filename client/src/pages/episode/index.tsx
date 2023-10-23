@@ -43,10 +43,20 @@ const EpisodePage = () => {
                             <span>Play</span>
                         </button>
                     </div>
-                    <div className={styles.iconButton} onClick={() => addToQueue(episode)}>
+                    <div
+                        className={styles.iconButton}
+                        onClick={() => addToQueue(episode)}
+                    >
                         <MdPlaylistAdd />
                     </div>
-                    <ContextMenu menuItems={[{ text: "Mark Played", handler: () => markPlayed(episode) }]} />
+                    <ContextMenu
+                        menuItems={[
+                            {
+                                text: "Mark Played",
+                                handler: () => markPlayed(episode),
+                            },
+                        ]}
+                    />
                 </div>
                 <Divider />
                 <div className={styles.content}>{parse(episode.content)}</div>

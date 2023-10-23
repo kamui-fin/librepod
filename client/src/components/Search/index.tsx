@@ -27,7 +27,7 @@ const SearchBar = <T,>({ text, data, cmpKeys, onSearch }: Props<T>) => {
                                 }
                             }
                             return false
-                        })
+                        }),
                     )
                 }}
             />

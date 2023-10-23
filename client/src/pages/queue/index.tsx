@@ -18,7 +18,7 @@ const QueuePage = () => {
             <Layout inner>
                 <ActionTitleBar title="Queue" />
                 <div
-                    className={styles.clearHistory}
+                    className={styles.clearQueue}
                     onClick={() => setShowConfirmModal(true)}
                 >
                     <span>Clear Queue</span>

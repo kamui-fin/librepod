@@ -1,4 +1,4 @@
-<h1>LibrePod</h1>
+# LibrePod
 
 [![Licence](https://img.shields.io/github/license/kamui-fin/librepod?style=for-the-badge)](./LICENSE)
 ![Figma](https://img.shields.io/badge/figma-%23F24E1E.svg?style=for-the-badge&logo=figma&logoColor=white)
@@ -43,9 +43,12 @@ Note: the following UI previews are not yet finalized and will undergo further i
 
 Librepod consists of a typical server-client architecture, with the server performing the majority of the heavylifting (i.e. feed polling, caching, etc.) for a variety of reasons:
 
+- Centralizing the business logic ensures a standardized and consistent approach across all client applications.
+  - Developers can focus on integrating the API without worrying about the underlying intricacies of podcast aggregation
 - Blazing-fast client-side experience
 - Server-client architecture allows seamless feed synchronization between multiple devices
 - Enables state saving and reconciliation from different clients
+- Easier maintenance and updates
 
 Cookie-based sessions are used for authentication with argon2 hashing.
 
@@ -53,16 +56,29 @@ Librepod supports parsing Atom, JSON, RSS0, RSS1, and RSS2 feeds. HTTP results a
 
 If scaling up becomes necessary, I'm considering spinning up a separate micro-service for feed generation specifically.
 
+### API
+
+The Rust-based LibrePod API aims to provide developers with a centralized and comprehensive interface, allowing them to integrate the platform seamlessly into their own applications and services.
+The key concept is to encapsulate all podcast-related business logic within a "black box" model on the server side.
+Clients will interact with the API to fetch data and perform actions, abstracting away the complexities of podcast aggregation, caching, and other operations.
+
 ### Future Roadmap
 
 - Introduce Web Sub support, as it is substantially more efficient than manual polling for the feeds that support it
 - Load data from PodcastIndex for features like searching feeds, viewing the trending ones per country, etc.
-  - Recommendation system
+  - Recommendation system (crowdsourced?)
 - Develop a Linux command-line client that can be headlessly operated using IPC
   - Potentially hooked up with MPD
   - Features like play on boot, auto resume/pause based on other sound activity
 - Attach priorities to certain subscriptions
 - Document API routes
+- Language learning features
+  - Transcript integration
+  - Adjustable playback speed
+  - Language filter
+- User analytics to provide insights on listening habits
+- Collaborative playlists
+- Social sharing
 
 ## Development Environment
 

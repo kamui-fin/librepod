@@ -6,11 +6,13 @@ import { GrCircleInformation } from "react-icons/gr"
 const SettingsPage = () => {
     return (
         <Layout>
-            <ActionTitleBar title="Settings" />
-            <div className={styles.notImplemented}>
-                <GrCircleInformation />
-                <span>Coming soon!</span>
-            </div>
+            <Layout inner>
+                <ActionTitleBar title="Settings" />
+                <div className={styles.notImplemented}>
+                    <GrCircleInformation />
+                    <span>Coming soon!</span>
+                </div>
+            </Layout>
         </Layout>
     )
 }
