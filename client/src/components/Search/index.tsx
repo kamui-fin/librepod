@@ -21,7 +21,7 @@ const SearchBar = <T,>({ text, data, cmpKeys, onSearch }: Props<T>) => {
 
                     onSearch(
                         data.filter((elm) => {
-                            for (let key of cmpKeys) {
+                            for (const key of cmpKeys) {
                                 if (elm[key].includes(query)) {
                                     return true
                                 }

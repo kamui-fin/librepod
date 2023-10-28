@@ -89,7 +89,7 @@ git clone https://github.com/kamui-fin/librepod
 cd librepod
 ```
 
-Configure the required environment variables:
+Configure the required environment variables for the server:
 | Variable | Example |
 |--------------- | --------------- |
 | DATABASE_URL | postgres://postgres:postgres@localhost/librepod |
@@ -102,6 +102,11 @@ cargo install sqlx-cli
 sqlx migrate run
 cargo run
 ```
+
+Set the API url for the frontend `.env`:
+| Variable | Example |
+|--------------- | --------------- |
+| VITE_API_URL | http://localhost:3000 |
 
 To start the frontend on [`http://localhost:5173`](`http://localhost:5173`):
 

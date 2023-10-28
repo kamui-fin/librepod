@@ -17,8 +17,8 @@ const EpisodeList = ({
     withoutDate = false,
 }: Props) => {
     const groupByDate = (eps: Episode[]) => {
-        let grouped: { [key: string]: Episode[] } = {}
-        for (let ep of eps) {
+        const grouped: { [key: string]: Episode[] } = {}
+        for (const ep of eps) {
             const date = getHumanDate(ep.published)
             if (date in grouped) {
                 grouped[date].push(ep)

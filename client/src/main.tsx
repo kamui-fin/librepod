@@ -22,6 +22,8 @@ import {
 } from "./lib/api"
 import EpisodePage from "./pages/episode"
 import QueuePage from "./pages/queue"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const rootPaths = [
     {
@@ -91,8 +93,13 @@ const router = createBrowserRouter([
     },
 ])
 
+const queryClient = new QueryClient()
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-        <RouterProvider router={router} />
+        <QueryClientProvider client={queryClient}>
+            <RouterProvider router={router} />
+            <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
     </React.StrictMode>,
 )

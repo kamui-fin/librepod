@@ -11,12 +11,18 @@ import Input from "../../components/Input"
 import { useState } from "react"
 import { Subscription } from "../../lib/types"
 import { addSubscription } from "../../lib/api"
+import { useQueryClient } from "@tanstack/react-query"
 
 const SubscriptionsPage = () => {
     const [showAddModal, setShowAddModal] = useState(false)
     const [addRssLink, setAddRssLink] = useState("")
     const { subsById } = useOutletContext()
     const [subs, setSubs] = useState<Subscription[]>(Object.values(subsById))
+
+    const queryClient = useQueryClient()
+    // const query = useQuery({ queryKey: ['subscriptions'], queryFn:  })
+
+
     return (
         <Layout>
             <Layout inner>

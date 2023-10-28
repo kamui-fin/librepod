@@ -98,7 +98,7 @@ export const feedLoader = async () => {
         const episodes = await getFeed()
         const subs = await getSubscriptions()
         const subsById = {}
-        for (let sub of subs) {
+        for (const sub of subs) {
             subsById[sub.id] = sub
         }
         return {
