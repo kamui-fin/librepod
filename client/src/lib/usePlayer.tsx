@@ -110,8 +110,8 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }, [getPosition])
 
-    const markPlayed = (episode) => {
-        axios.post(`/history/${episode.id}`)
+    const markPlayed = (episode: Episode) => {
+        axios.post(`/history/${episode.id}`).then(() => {return;}).catch((e) => console.error(e))
     }
 
     useEffect(() => {

@@ -9,7 +9,14 @@ import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/lib/useAuth"
 import { toast } from "react-toastify"
 
-const Schema = z
+export interface RegisterBody {
+    username: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+}
+
+const RegisterSchema = z
     .object({
         username: z
             .string()
@@ -35,7 +42,8 @@ const Schema = z
 
 const RegisterPage = () => {
     const navigate = useNavigate()
-    const { register } = useAuth()
+    const { register } = useAuth() ?? {}
+    if (!register) return <></>
     return (
         <Formik
             initialValues={{

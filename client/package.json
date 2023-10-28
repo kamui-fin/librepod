@@ -42,6 +42,7 @@
         "eslint-plugin-react-hooks": "^4.6.0",
         "eslint-plugin-react-refresh": "^0.4.1",
         "sass": "^1.63.6",
+        "tsconfig-paths": "^4.2.0",
         "typescript": "^5.0.2",
         "vite": "^4.4.0"
     }

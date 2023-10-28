@@ -11,18 +11,24 @@ import { toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import Layout from "../../components/Layout"
 
-const Schema = z.object({
+export interface LoginBody {
+    usernameOrEmail: string;
+    password: string;
+}
+
+const LoginSchema = z.object({
     usernameOrEmail: z.string(),
     password: z.string(),
 })
 
 const LoginPage = () => {
-    const { login } = useAuth()
+    const { login } = useAuth() ?? {}
+    if (!login) return <></>
     return (
         <Layout>
             <Formik
                 initialValues={{ usernameOrEmail: "", password: "" }}
-                validationSchema={toFormikValidationSchema(Schema)}
+                validationSchema={toFormikValidationSchema(LoginSchema)}
                 onSubmit={async (values, { setSubmitting }) => {
                     try {
                         await login(values, () => setSubmitting(false))

@@ -1,28 +1,54 @@
-import { createContext, useContext, useEffect, useMemo } from "react"
-import { useNavigate } from "react-router-dom"
+import { createContext, useContext, useMemo } from "react"
 import { useLocalStorage } from "@/lib/useLocalStorage"
 import { axios } from "./api"
+import { LoginBody } from "../pages/login"
+import { RegisterBody } from "../pages/register"
 
-const AuthContext = createContext({})
+interface User {
+    id: string
+    name: string
+    email: string
+    password: string // TODO: remove
+    salt: number[]
+    created_at: string // convert to date
+}
+
+interface Auth {
+    user: User | null
+    register: (values: RegisterBody, onDone: () => void) => Promise<void>
+    login: (values: LoginBody, onDone: () => void) => Promise<void>
+    logout: () => Promise<void>
+}
+
+const AuthContext = createContext<Auth | null>(null)
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [user, setUser] = useLocalStorage("user", null)
-    const navigate = useNavigate()
+    const [user, setUser] = useLocalStorage<User | null>("user", null)
 
-    const register = async (values, onDone: () => void) => {
-        const { data } = await axios.put("/auth/register", values)
-        setUser(data, onDone)
+    const register = async (
+        values: RegisterBody,
+        onDone: () => void
+    ) => {
+        const { data }: { data: User } = await axios.put(
+            "/auth/register",
+            values
+        )
+        setUser(data)
+        onDone()
     }
 
-    const login = async (values, onDone: () => void) => {
-        const { data } = await axios.put("/auth/login", values)
-        setUser(data, onDone)
+    const login = async (values: LoginBody, onDone: () => void) => {
+        const { data }: { data: User } = await axios.put("/auth/login", values)
+        setUser(data)
+        onDone()
     }
 
     const logout = async () => {
         try {
             await axios.put("/auth/logout")
-        } catch {}
+        } catch (e) {
+            console.log(e)
+        }
         setUser(null)
     }
 
@@ -33,7 +59,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             login,
             logout,
         }),
-        [user],
+        [user]
     )
     return (
         <AuthContext.Provider value={value}> {children}</AuthContext.Provider>
