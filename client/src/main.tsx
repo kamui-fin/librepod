@@ -69,7 +69,6 @@ const router = createBrowserRouter([
             </AuthLayout>
         ),
         children: rootPaths,
-        loader: feedLoader,
     },
     {
         path: "/register",

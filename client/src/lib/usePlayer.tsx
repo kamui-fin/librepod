@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { Duration } from "luxon"
 import { useGlobalAudioPlayer } from "react-use-audio-player"
 import { Episode } from "./types"
-import { axios } from "./api"
+import { axios, markPlayed } from "./api"
 
 const PlayerContext = React.createContext({})
 
@@ -109,10 +109,6 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
             }
         }
     }, [getPosition])
-
-    const markPlayed = (episode: Episode) => {
-        axios.post(`/history/${episode.id}`).then(() => {return;}).catch((e) => console.error(e))
-    }
 
     useEffect(() => {
         if (!currentEpisode) {

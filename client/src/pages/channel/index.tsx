@@ -12,13 +12,26 @@ import ActionTitleBar from "../../components/ActionTitleBar"
 import Divider from "../../components/Divider"
 import ChannelMeta, { Channel } from "../../components/ChannelMeta"
 import { ChannelEpisodes, Subscription } from "../../lib/types"
-import { useLoaderData } from "react-router-dom"
+import { useLoaderData, useParams } from "react-router-dom"
 import { useState } from "react"
 import { usePlayerContext } from "../../lib/usePlayer"
+import { getSubscriptionById } from "@/lib/api"
+
+type ChannelParams = {
+    id: string;
+}
 
 const ChannelPage = () => {
+    const { id } = useParams();
+    if (!id) return <></>
+
     const { queueFromList } = usePlayerContext()
-    const { channel, episodes }: ChannelEpisodes = useLoaderData()
+    // const { channel, episodes }: ChannelEpisodes = useLoaderData()
+    const { data: channel } = useQuery({
+        queryKey: ['channel'],
+        queryFn: getSubscriptionById(id)
+    })
+
     const [episodeData, setEpisodeData] = useState(episodes)
     return (
         <Layout>

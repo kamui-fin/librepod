@@ -1,10 +1,10 @@
 import { createContext, useContext, useMemo } from "react"
 import { useLocalStorage } from "@/lib/useLocalStorage"
-import { axios } from "./api"
+import { axios, registerUser, loginUser } from "./api"
 import { LoginBody } from "../pages/login"
 import { RegisterBody } from "../pages/register"
 
-interface User {
+export interface User {
     id: string
     name: string
     email: string
@@ -29,26 +29,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         values: RegisterBody,
         onDone: () => void
     ) => {
-        const { data }: { data: User } = await axios.put(
-            "/auth/register",
-            values
-        )
-        setUser(data)
+        const user = await registerUser(values);
+        setUser(user)
         onDone()
     }
 
     const login = async (values: LoginBody, onDone: () => void) => {
-        const { data }: { data: User } = await axios.put("/auth/login", values)
-        setUser(data)
+        const user = await loginUser(values);
+        setUser(user)
         onDone()
     }
 
     const logout = async () => {
-        try {
-            await axios.put("/auth/logout")
-        } catch (e) {
-            console.log(e)
-        }
+        await logout()
         setUser(null)
     }
 

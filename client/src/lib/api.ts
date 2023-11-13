@@ -1,6 +1,8 @@
-import Axios from "axios"
-import { ChannelEpisode, ChannelEpisodes, Episode, Subscription } from "./types"
-import { LoaderFunctionArgs } from "react-router-dom"
+import Axios, { AxiosError } from "axios"
+import { ChannelEpisode, ChannelEpisodes, Episode, Subscription, SubscriptionById } from "./types"
+import { LoginBody } from "@/pages/login"
+import { RegisterBody } from "@/pages/register"
+import { User } from "./useAuth"
 
 export interface OkResponse {
     ok: boolean
@@ -12,33 +14,29 @@ export const axios = Axios.create({
 })
 
 axios.interceptors.response.use(
-    function (response) {
-        return response
-    },
-    function (error) {
-        if (error.response.status === 401) {
+    response => response,
+    (error: AxiosError) => {
+        if (error.response?.status === 401) {
             localStorage.removeItem("user")
         }
         return Promise.reject(error)
     },
 )
 
-export const getSubscriptions = async (): Promise<Subscription[]> => {
+export const getSubscriptions = async (): Promise<SubscriptionById> => {
     const { data } = await axios.get<Subscription[]>("/channel")
-    return data
+    const subsById: SubscriptionById = {}
+    for (const sub of data) {
+        subsById[sub.id] = sub
+    }
+    return subsById
 }
 
-export const getSubscription = async (
-    context: LoaderFunctionArgs,
+export const getSubscriptionById = async (
+    id: string
 ): Promise<ChannelEpisodes> => {
-    const id = context.params.name
-    try {
-        const { data } = await axios.get<ChannelEpisodes>(`/channel/${id}`)
-        return data
-    } catch (e) {
-        console.log(e)
-        return {}
-    }
+    const { data } = await axios.get<ChannelEpisodes>(`/channel/${id}`)
+    return data
 }
 
 export const addSubscription = async (
@@ -58,65 +56,49 @@ export const deleteSubscription = async (
 }
 
 export const getFeed = async (): Promise<Episode[]> => {
-    try {
-        const { data } = await axios.get<Episode[]>("/feed")
-        return data
-    } catch (e) {
-        return []
-    }
+    const { data } = await axios.get<Episode[]>("/feed")
+    return data
 }
 
-export const getEpisode = async (
-    context: LoaderFunctionArgs,
-): Promise<ChannelEpisode> => {
-    const id = context.params.name
-    try {
-        const { data } = await axios.get<Episode>(`/feed/${id}`)
-        return {
-            episode: data,
-            channel: (
-                await axios.get<ChannelEpisodes>(`/channel/${data.channel_id}`)
-            ).data,
-        }
-    } catch (e) {
-        return {}
+export const getEpisodeById = async (id: string): Promise<ChannelEpisode> => {
+    const { data: episodeData } = await axios.get<Episode>(`/feed/${id}`)
+    const { data: channelData } = await axios.get<ChannelEpisodes>(`/channel/${episodeData.channel_id}`)
+    return {
+        episode: episodeData,
+        channel: channelData.channel, // TODO: optimize
     }
 }
 
 export const getHistory = async (): Promise<Episode[]> => {
-    try {
-        const { data } = await axios.get<Episode[]>("/user/history")
-        return data
-    } catch (e) {
-        return []
-    }
-}
-
-export const feedLoader = async () => {
-    try {
-        const history = await getHistory()
-        const episodes = await getFeed()
-        const subs = await getSubscriptions()
-        const subsById = {}
-        for (const sub of subs) {
-            subsById[sub.id] = sub
-        }
-        return {
-            episodes,
-            subsById,
-            history,
-        }
-    } catch (e) {
-        console.log(e)
-        return {}
-    }
+    const { data } = await axios.get<Episode[]>("/user/history")
+    return data
 }
 
 export const clearHistory = async (): Promise<OkResponse> => {
-    try {
-        const { data } = await axios.delete<OkResponse>("/user/history")
-        return data
-    } catch (e) {
-        return { ok: false }
-    }
+    const { data } = await axios.delete<OkResponse>("/user/history")
+    return data
+}
+
+
+export const markPlayed = async (episode: Episode) => {
+    await axios.post(`/history/${episode.id}`)
+}
+
+// Authentication calls
+
+export const logout = async () => {
+    await axios.put("/auth/logout")
+}
+
+export const loginUser = async (values: LoginBody) => {
+    const { data }: { data: User } = await axios.put("/auth/login", values)
+    return data;
+}
+
+export const registerUser = async (values: RegisterBody) => {
+    const { data }: { data: User } = await axios.put(
+        "/auth/register",
+        values
+    )
+    return data;
 }

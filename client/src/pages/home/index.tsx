@@ -9,6 +9,8 @@ import {
     MdQueueMusic,
 } from "react-icons/md"
 import { PlayerProvider } from "../../lib/usePlayer"
+import { useQuery } from "@tanstack/react-query"
+import { feedLoader } from "@/lib/api"
 
 const navItems = [
     {
@@ -39,12 +41,15 @@ const navItems = [
 ]
 
 const HomePage = () => {
-    const feedData = useLoaderData()
+    const { data }  = useQuery({
+        queryKey: ['feed'],
+        queryFn: () => feedLoader
+    })
     return (
         <PlayerProvider>
             <div className={styles.container}>
-                <Sidebar test={feedData} navItems={navItems} />
-                <Outlet context={feedData} />
+                <Sidebar test={data} navItems={navItems} />
+                <Outlet context={data} />
             </div>
         </PlayerProvider>
     )

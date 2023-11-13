@@ -10,6 +10,10 @@ export interface Subscription {
     image: string | null
 }
 
+export type SubscriptionById = {
+    [id: string]: Subscription;
+}
+
 export interface Episode {
     id: string
     channel_id: string
