@@ -1,18 +1,17 @@
 import { BiLinkAlt } from "react-icons/bi"
-import { Episode } from "../EpisodeList"
 import styles from "./style.module.scss"
-import { Subscription } from "../../lib/types"
+import { Channel } from "../../lib/types"
 import { stripHtml } from "string-strip-html"
 
 interface Props {
-    channel: Subscription
+    channel: Channel
 }
 
 const ChannelMeta = ({ channel }: Props) => {
     return (
         <div className={styles.channelMeta}>
             <div className={styles.image}>
-                <img src={channel.image} />
+                <img src={channel.image || ''} />
             </div>
             <div className={styles.textMeta}>
                 <h1 className={styles.title}>{channel.title}</h1>
@@ -22,7 +21,7 @@ const ChannelMeta = ({ channel }: Props) => {
                     <span>{channel.website_link}</span>
                 </div>
                 <div className={styles.desc}>
-                    {stripHtml(channel.description).result}
+                    {stripHtml(channel.description || '').result}
                 </div>
             </div>
         </div>

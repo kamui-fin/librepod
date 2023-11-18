@@ -6,14 +6,14 @@ use axum::{
     response::IntoResponse,
     Extension, Json,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use uuid::Uuid;
 
 use crate::{
     config::AppContext,
     error::AppError,
-    models::{gen_uuid, User},
+    models::{gen_uuid, PodcastChannel, PodcastEpisode, User, EpisodeWithChannel},
     services::feed,
 };
 
@@ -80,7 +80,17 @@ pub async fn get_episode(
     State(state): State<AppContext>,
 ) -> Result<impl IntoResponse, AppError> {
     let episode = feed::get_episode(id, &state.pool).await?;
-    Ok(Json(episode))
+    if let Some(episode) = episode {
+        let channel = feed::get_channel(episode.channel_id, &state.pool)
+            .await?
+            .unwrap();
+        let episode_channel = EpisodeWithChannel { episode, channel };
+        Ok(Json(json!({
+            "data": episode_channel,
+        })))
+    } else {
+        Ok(Json(json!({ "error": "Episode not found" })))
+    }
 }
 
 pub async fn retrieve_feed(

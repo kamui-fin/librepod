@@ -1,7 +1,7 @@
 import styles from "./style.module.scss"
 
 import { BsFillPlayFill } from "react-icons/bs"
-import EpisodeList, { Episode } from "../../components/EpisodeList"
+import EpisodeList from "../../components/EpisodeList"
 import Button from "../../components/Button"
 import SearchBar from "../../components/Search"
 import Layout from "../../components/Layout"
@@ -10,29 +10,31 @@ import cx from "classnames"
 import { MdSort } from "react-icons/md"
 import ActionTitleBar from "../../components/ActionTitleBar"
 import Divider from "../../components/Divider"
-import ChannelMeta, { Channel } from "../../components/ChannelMeta"
-import { ChannelEpisodes, Subscription } from "../../lib/types"
-import { useLoaderData, useParams } from "react-router-dom"
+import ChannelMeta from "../../components/ChannelMeta"
+import { useParams } from "react-router-dom"
 import { useState } from "react"
-import { usePlayerContext } from "../../lib/usePlayer"
+import { usePlayer } from "../../lib/usePlayer"
 import { getSubscriptionById } from "@/lib/api"
-
-type ChannelParams = {
-    id: string;
-}
+import { useQuery } from "@tanstack/react-query"
 
 const ChannelPage = () => {
     const { id } = useParams();
-    if (!id) return <></>
+    const { queueFromList } = usePlayer()
 
-    const { queueFromList } = usePlayerContext()
-    // const { channel, episodes }: ChannelEpisodes = useLoaderData()
-    const { data: channel } = useQuery({
-        queryKey: ['channel'],
-        queryFn: getSubscriptionById(id)
+    const defaultValue = { channel: null, episodes: []};
+    const { data } = useQuery({
+        queryKey: ['channel', id],
+        queryFn: async () => {
+            if (!id) throw Error("Invalid channel ID")
+            return await getSubscriptionById(id)
+        },
     })
+    const { channel, episodes } = data || defaultValue;
 
     const [episodeData, setEpisodeData] = useState(episodes)
+
+    if (!channel) return <></>
+
     return (
         <Layout>
             <ActionTitleBar
@@ -81,7 +83,7 @@ const ChannelPage = () => {
                         }}
                     />
                 </div>
-                <EpisodeList items={episodeData} channels={{}} channelOnly />
+                <EpisodeList items={episodeData.map(episode => ({ episode }))} />
             </Layout>
         </Layout>
     )

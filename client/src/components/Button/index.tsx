@@ -4,7 +4,7 @@ import cx from "classnames"
 interface Props {
     submit?: boolean
     secondary?: boolean
-    children: React.ReactElement | string
+    children: React.ReactNode | string
     disabled?: boolean
     className?: string
     onClick?: () => void
@@ -18,7 +18,7 @@ const Button = ({
     disabled,
     onClick,
 }: Props) => {
-    if (submit) {
+    if (submit && typeof children === 'string') {
         return (
             <input
                 className={cx(styles.btn, className, {

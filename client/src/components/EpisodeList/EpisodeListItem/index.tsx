@@ -2,52 +2,55 @@ import { Link } from "react-router-dom"
 import styles from "./style.module.scss"
 import { stripHtml } from "string-strip-html"
 import { AiFillPlayCircle } from "react-icons/ai"
-import { Episode, Subscription } from "../../../lib/types"
+import { ChannelEpisode, Episode } from "../../../lib/types"
 import { getHumanDate } from "../../../lib/utils"
 import { MdPlaylistAdd } from "react-icons/md"
-import { usePlayerContext } from "../../../lib/usePlayer"
+import { usePlayer } from "../../../lib/usePlayer"
 
-interface Props {
-    item: Episode
-    channel?: Subscription
-    channelOnly: boolean
+export interface EpisodeOnly {
+    episode: Episode
 }
 
-const EpisodeListItem = ({ item, channel, channelOnly }: Props) => {
-    const { addToQueue, addToFront } = usePlayerContext()
+interface Props {
+    item: EpisodeOnly | ChannelEpisode,
+}
+
+const EpisodeListItem = ({ item }: Props) => {
+    const { episode } = item;
+    const { addToQueue, addToFront } = usePlayer()
     return (
         <div className={styles.listItem}>
-            {channelOnly ? (
+            {!("channel" in item) ? (
                 <div className={styles.meta}>
                     <span className={styles.channel}>
-                        {getHumanDate(item.published)}
+                        {getHumanDate(episode.published)}
                     </span>
-                    <Link to={`/episode/${item.id}`}>
-                        <h3 className={styles.title}>{item.title}</h3>
+                    <Link to={`/episode/${episode.id}`}>
+                        <h3 className={styles.title}>{episode.title}</h3>
                     </Link>
                     <p className={styles.desc}>
-                        {stripHtml(item.description).result.substring(0, 150) +
+                        {stripHtml(episode.description || '').result.substring(0, 150) +
                             "..."}
                     </p>
                 </div>
             ) : (
                 <div className={styles.withChannel}>
                     <div className={styles.image}>
-                        <img src={channel.image} />
+                        <img src={item.channel.image || ''} />
                     </div>
                     <div className={styles.meta}>
-                        <Link to={`/episode/${item.id}`}>
-                            <h3 className={styles.title}>{item.title}</h3>
+                        <Link to={`/episode/${episode.id}`}>
+                            <h3 className={styles.title}>{episode.title}</h3>
                         </Link>
                         <p className={styles.desc}>
-                            {stripHtml(item.description).result.substring(
+                            {stripHtml(episode?.description || '').result.substring(
                                 0,
                                 130,
                             ) + "..."}
                         </p>
-                        <Link to={`/subscriptions/channel/${item.channel_id}`}>
+                        <Link to={`/subscriptions/channel/${item.channel.id}`}>
                             <span className={styles.channel}>
-                                {channel.title}
+                                {item.channel?.title || ''}
                             </span>
                         </Link>
                     </div>
@@ -56,14 +59,14 @@ const EpisodeListItem = ({ item, channel, channelOnly }: Props) => {
             <div className={styles.play}>
                 <button
                     className={styles.playButton}
-                    onClick={() => addToFront(item)}
+                    onClick={() => addToFront(episode)}
                 >
                     <AiFillPlayCircle />
                     <span>Play</span>
                 </button>
                 <button
                     className={styles.queueButton}
-                    onClick={() => addToQueue(item)}
+                    onClick={() => addToQueue(episode)}
                 >
                     <MdPlaylistAdd />
                     <span>Queue</span>

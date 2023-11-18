@@ -1,8 +1,9 @@
-import { createContext, useContext, useMemo } from "react"
+import { useMemo } from "react"
 import { useLocalStorage } from "@/lib/useLocalStorage"
-import { axios, registerUser, loginUser } from "./api"
+import { registerUser, loginUser } from "./api"
 import { LoginBody } from "../pages/login"
 import { RegisterBody } from "../pages/register"
+import { createCtx } from "./utils"
 
 export interface User {
     id: string
@@ -20,7 +21,7 @@ interface Auth {
     logout: () => Promise<void>
 }
 
-const AuthContext = createContext<Auth | null>(null)
+export const [useAuth, CtxProvider] = createCtx<Auth | null>()
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useLocalStorage<User | null>("user", null)
@@ -55,10 +56,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         [user]
     )
     return (
-        <AuthContext.Provider value={value}> {children}</AuthContext.Provider>
+        <CtxProvider value={value}> {children}</CtxProvider>
     )
-}
-
-export const useAuth = () => {
-    return useContext(AuthContext)
 }

@@ -52,7 +52,7 @@ const RegisterPage = () => {
                 password: "",
                 confirmPassword: "",
             }}
-            validationSchema={toFormikValidationSchema(Schema)}
+            validationSchema={toFormikValidationSchema(RegisterSchema)}
             onSubmit={async (values, { setSubmitting }) => {
                 try {
                     await register(values, () => setSubmitting(false))

@@ -15,7 +15,8 @@ const Select = ({ icon, onDone, items, defaultIndex = 0 }: Props) => {
             <select
                 className={cx(styles.select, { [styles.withIcon]: !!icon })}
                 onChange={(ev) => {
-                    onDone && onDone(items[ev.target.value])
+                    const valueIndex = Number.parseInt(ev.target.value);
+                    onDone && onDone(items[valueIndex])
                 }}
             >
                 {items.map((item, indx) => (

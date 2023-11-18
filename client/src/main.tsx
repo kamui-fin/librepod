@@ -13,13 +13,6 @@ import SubscriptionsPage from "./pages/subscriptions"
 import SettingsPage from "./pages/settings"
 import HistoryPage from "./pages/history"
 import ChannelPage from "./pages/channel"
-import {
-    feedLoader,
-    getEpisode,
-    getFeed,
-    getSubscription,
-    getSubscriptions,
-} from "./lib/api"
 import EpisodePage from "./pages/episode"
 import QueuePage from "./pages/queue"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -31,14 +24,12 @@ const rootPaths = [
         index: true,
     },
     {
-        path: "/subscriptions/channel/:name",
+        path: "/subscriptions/channel/:id",
         element: <ChannelPage />,
-        loader: getSubscription,
     },
     {
-        path: "/episode/:name",
+        path: "/episode/:id",
         element: <EpisodePage />,
-        loader: getEpisode,
     },
     {
         path: "/subscriptions",

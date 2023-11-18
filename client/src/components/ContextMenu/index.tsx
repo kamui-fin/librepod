@@ -13,9 +13,9 @@ const ContextMenu = ({ menuItems }: { menuItems: MenuItem[] }) => {
     const focusRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
         if (openContext) {
-            focusRef.current.focus()
+            focusRef?.current?.focus()
         } else {
-            focusRef.current.blur()
+            focusRef?.current?.blur()
         }
     }, [openContext])
     return (

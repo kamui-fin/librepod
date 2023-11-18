@@ -1,6 +1,5 @@
 import styles from "./style.module.scss"
-import { ChannelEpisode, Episode } from "../../lib/types"
-import { Link, useLoaderData } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import Layout from "../../components/Layout"
 import ActionTitleBar from "../../components/ActionTitleBar"
 import Divider from "../../components/Divider"
@@ -9,15 +8,28 @@ import { AiFillPlayCircle } from "react-icons/ai"
 import { getHumanDate } from "../../lib/utils"
 import ContextMenu from "../../components/ContextMenu"
 import { MdPlaylistAdd } from "react-icons/md"
-import { usePlayerContext } from "../../lib/usePlayer"
-import { axios } from "../../lib/api"
+import { usePlayer} from "../../lib/usePlayer"
+import { getEpisodeById, markPlayed } from "@/lib/api"
+import { useQuery } from "@tanstack/react-query"
 
 const EpisodePage = () => {
-    const { episode, channel }: ChannelEpisode = useLoaderData()
-    const { addToQueue, addToFront } = usePlayerContext()
-
-    const markPlayed = (episode) => {
-        axios.post(`/history/${episode.id}`)
+    const { id } = useParams()
+    const defaultValue = {
+        episode: null,
+        channel: null,
+    }
+    const { data = defaultValue, isLoading } = useQuery({
+        queryKey: ['episode', id],
+        queryFn: async () => {
+            if (!id) throw Error("Invalid episode ID")
+            return await getEpisodeById(id)
+        }, 
+    })
+    const { channel, episode } = data;
+    const { addToQueue, addToFront } = usePlayer()
+    
+    if (!channel && !episode) {
+        return <></>
     }
 
     return (
@@ -25,12 +37,12 @@ const EpisodePage = () => {
             <ActionTitleBar />
             <Layout inner>
                 <div className={styles.channel}>
-                    <img src={channel.channel.image} alt="" />
+                    <img src={channel?.image || ''} alt="" />
                     <div className={styles.text}>
                         <Link
-                            to={`/subscriptions/channel/${channel.channel.id}`}
+                            to={`/subscriptions/channel/${channel.id}`}
                         >
-                            <h3>{channel.channel.title}</h3>
+                            <h3>{channel.title}</h3>
                         </Link>
                         <p>{getHumanDate(episode.published)}</p>
                     </div>
@@ -53,13 +65,13 @@ const EpisodePage = () => {
                         menuItems={[
                             {
                                 text: "Mark Played",
-                                handler: () => markPlayed(episode),
+                                handler: () => { markPlayed(episode).then().catch(console.error) } ,
                             },
                         ]}
                     />
                 </div>
                 <Divider />
-                <div className={styles.content}>{parse(episode.content)}</div>
+                <div className={styles.content}>{parse(episode.content || '')}</div>
             </Layout>
         </Layout>
     )

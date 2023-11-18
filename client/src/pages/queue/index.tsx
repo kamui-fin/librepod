@@ -1,17 +1,14 @@
 import React, { useState } from "react"
 import styles from "./style.module.scss"
 import Layout from "../../components/Layout"
-import SearchBar from "../../components/Search"
 import ActionTitleBar from "../../components/ActionTitleBar"
 import Modal from "../../components/Modal"
 import EpisodeList from "../../components/EpisodeList"
-import { usePlayerContext } from "../../lib/usePlayer"
-import { useOutletContext } from "react-router-dom"
+import { usePlayer} from "../../lib/usePlayer"
 
 const QueuePage = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false)
-    const { queue, clearQueue } = usePlayerContext()
-    const { subsById } = useOutletContext()
+    const { queue, clearQueue } = usePlayer()
 
     return (
         <Layout>
@@ -25,8 +22,7 @@ const QueuePage = () => {
                 </div>
                 <EpisodeList
                     withoutDate={true}
-                    items={queue}
-                    channels={subsById}
+                    items={queue.map(episode => ({episode}))}
                 />
                 {showConfirmModal && (
                     <Modal

@@ -15,7 +15,7 @@ interface Props {
     navItems: NavItem[]
 }
 
-const Sidebar = ({ navItems, test }: Props) => {
+const Sidebar = ({ navItems }: Props) => {
     const { logout } = useAuth()
     return (
         <aside className={styles.container}>
@@ -37,13 +37,13 @@ const Sidebar = ({ navItems, test }: Props) => {
                                 <li>{text}</li>
                             </NavLink>
                         ))}
-                        <a className={styles.logout} onClick={logout}>
+                        <a className={styles.logout} onClick={() => { logout().then().catch(console.error)} }>
                             <MdOutlineLogout />
                             <span>Logout</span>
                         </a>
                     </div>
                 </ul>
-                <SidebarPlayer test={test} />
+                <SidebarPlayer />
             </nav>
         </aside>
     )

@@ -1,5 +1,5 @@
 import Axios, { AxiosError } from "axios"
-import { ChannelEpisode, ChannelEpisodes, Episode, Subscription, SubscriptionById } from "./types"
+import { ChannelEpisode, ChannelEpisodes, Episode, Channel } from "./types"
 import { LoginBody } from "@/pages/login"
 import { RegisterBody } from "@/pages/register"
 import { User } from "./useAuth"
@@ -23,13 +23,9 @@ axios.interceptors.response.use(
     },
 )
 
-export const getSubscriptions = async (): Promise<SubscriptionById> => {
-    const { data } = await axios.get<Subscription[]>("/channel")
-    const subsById: SubscriptionById = {}
-    for (const sub of data) {
-        subsById[sub.id] = sub
-    }
-    return subsById
+export const getSubscriptions = async (): Promise<Channel[]> => {
+    const { data } = await axios.get<Channel[]>("/channel")
+    return data;
 }
 
 export const getSubscriptionById = async (
@@ -41,8 +37,8 @@ export const getSubscriptionById = async (
 
 export const addSubscription = async (
     rssLink: string,
-): Promise<Subscription> => {
-    const { data } = await axios.post<Subscription>("/channel", {
+): Promise<Channel> => {
+    const { data } = await axios.post<Channel>("/channel", {
         rss_link: rssLink,
     })
     return data
@@ -55,22 +51,18 @@ export const deleteSubscription = async (
     return data
 }
 
-export const getFeed = async (): Promise<Episode[]> => {
-    const { data } = await axios.get<Episode[]>("/feed")
+export const getFeed = async (): Promise<ChannelEpisode[]> => {
+    const { data } = await axios.get<ChannelEpisode[]>("/feed") // TODO: we need channel data for each
     return data
 }
 
 export const getEpisodeById = async (id: string): Promise<ChannelEpisode> => {
-    const { data: episodeData } = await axios.get<Episode>(`/feed/${id}`)
-    const { data: channelData } = await axios.get<ChannelEpisodes>(`/channel/${episodeData.channel_id}`)
-    return {
-        episode: episodeData,
-        channel: channelData.channel, // TODO: optimize
-    }
+    const { data } = await axios.get<ChannelEpisode>(`/feed/${id}`)
+    return data
 }
 
-export const getHistory = async (): Promise<Episode[]> => {
-    const { data } = await axios.get<Episode[]>("/user/history")
+export const getHistory = async (): Promise<ChannelEpisode[]> => {
+    const { data } = await axios.get<ChannelEpisode[]>("/user/history")
     return data
 }
 

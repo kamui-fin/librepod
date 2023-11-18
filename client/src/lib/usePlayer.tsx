@@ -1,10 +1,34 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef } from "react"
 import { Duration } from "luxon"
 import { useGlobalAudioPlayer } from "react-use-audio-player"
 import { Episode } from "./types"
-import { axios, markPlayed } from "./api"
+import { markPlayed } from "./api"
+import { createCtx } from "./utils"
 
-const PlayerContext = React.createContext({})
+interface PlayerContextProps {
+    addToQueue: (episode: Episode) => void;
+    addToFront: (episode: Episode) => void;
+    playNext: () => void;
+    playPrevious: () => void;
+    skipTenSeconds: () => void;
+    replayTenSeconds: () => void;
+    setCurrentDuration: React.Dispatch<React.SetStateAction<Duration>>;
+    currentEpisode: Episode | null;
+    queue: Episode[];
+    paused: boolean;
+    error: string | null;
+    pause: () => void;
+    duration: number;
+    play: () => void;
+    getLuxonTotalDuration: () => Duration;
+    getPosition: () => number;
+    seek: (position: number) => void;
+    currentDuration: Duration;
+    queueFromList: (episodes: Episode[]) => void;
+    clearQueue: () => void;
+}
+
+export const [usePlayer, CtxProvider] = createCtx<PlayerContextProps | undefined>();
 
 export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
     const [queue, setQueue] = React.useState<Episode[]>([])
@@ -119,14 +143,14 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
                 html5: true,
                 onend: () => {
                     playNext()
-                    markPlayed(currentEpisode)
+                    markPlayed(currentEpisode).then().catch(console.error)
                 },
             })
         }
     }, [currentEpisode])
 
     return (
-        <PlayerContext.Provider
+        <CtxProvider
             value={{
                 addToQueue,
                 addToFront,
@@ -151,11 +175,6 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
             }}
         >
             {children}
-        </PlayerContext.Provider>
+        </CtxProvider>
     )
-}
-
-export const usePlayerContext = () => {
-    const context = React.useContext(PlayerContext)
-    return context
 }

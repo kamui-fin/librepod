@@ -16,12 +16,11 @@ module.exports = {
         project: true,
         tsconfigRootDir: __dirname,
     },
-    plugins: ["react-refresh"],
+    plugins: ["react-refresh", "unused-imports"],
     rules: {
-        "react-refresh/only-export-components": [
-            "warn",
-            { allowConstantExport: true },
-        ],
         "@typescript-eslint/no-non-null-assertion": "off",
+        "no-unused-vars": "off", // or "@typescript-eslint/no-unused-vars": "off",
+        "unused-imports/no-unused-imports": "warn",
+        "@typescript-eslint/no-unused-vars": "off"
     },
 }

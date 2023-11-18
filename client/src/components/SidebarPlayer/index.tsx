@@ -5,15 +5,13 @@ import { useEffect, useState } from "react"
 import { MdPause, MdReplay10, MdForward10 } from "react-icons/md"
 import styles from "./style.module.scss"
 import { BsFillPlayFill } from "react-icons/bs"
-import { usePlayerContext } from "../../lib/usePlayer"
-import { useOutletContext } from "react-router-dom"
-import { Duration } from "luxon"
+import { usePlayer } from "../../lib/usePlayer"
 import { stripHtml } from "string-strip-html"
 
-const SidebarPlayer = ({ test }) => {
+const SidebarPlayer = () => {
     const [values, setValues] = useState([0])
     const [paused, setPaused] = useState(true)
-    const { episodes, subsById } = test
+    // const { episodes, subsById } = test
     const {
         currentEpisode,
         duration,
@@ -29,11 +27,11 @@ const SidebarPlayer = ({ test }) => {
         seek,
         currentDuration,
         queueFromList,
-    } = usePlayerContext()
+    } = usePlayer()
 
-    useEffect(() => {
-        queueFromList(episodes.slice(0, 6))
-    }, [])
+    // useEffect(() => {
+    //     queueFromList(episodes.slice(0, 6))
+    // }, [])
 
     useEffect(() => {
         setValues([Math.ceil(currentDuration.as("seconds")) || 0])
@@ -54,10 +52,10 @@ const SidebarPlayer = ({ test }) => {
 
     return (
         <div className={styles.player}>
-            <img src={subsById[currentEpisode.channel_id].image} />
+            {/* <img src={subsById[currentEpisode.channel_id]?.image || ''} /> */}
             <h3>{currentEpisode.title.substring(0, 20) + "..."}</h3>
             <p>
-                {stripHtml(currentEpisode.description).result.substring(0, 20) +
+                {stripHtml(currentEpisode.description || '').result.substring(0, 20) +
                     "..."}
             </p>
             <div className={styles.slider}>

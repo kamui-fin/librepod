@@ -1,25 +1,21 @@
-import { Episode, Subscription } from "../../lib/types"
+import { ChannelEpisode } from "../../lib/types"
 import { getHumanDate } from "../../lib/utils"
-import EpisodeListItem from "./EpisodeListItem"
+import EpisodeListItem, { EpisodeOnly } from "./EpisodeListItem"
 import styles from "./style.module.scss"
 
 interface Props {
-    items: Episode[]
-    channels: { [key: string]: Subscription }
-    channelOnly?: boolean
+    items: ChannelEpisode[] | EpisodeOnly[]
     withoutDate?: boolean
 }
 
 const EpisodeList = ({
     items,
-    channels,
-    channelOnly = false,
     withoutDate = false,
 }: Props) => {
-    const groupByDate = (eps: Episode[]) => {
-        const grouped: { [key: string]: Episode[] } = {}
+    const groupByDate = <T extends EpisodeOnly>(eps: T[]) => {
+        const grouped: { [key: string]: T[] } = {}
         for (const ep of eps) {
-            const date = getHumanDate(ep.published)
+            const date = getHumanDate(ep.episode.published)
             if (date in grouped) {
                 grouped[date].push(ep)
             } else {
@@ -35,21 +31,8 @@ const EpisodeList = ({
                 <p>No episodes were found.</p>
             </div>
         )
-    } else if (withoutDate || channelOnly) {
-        return (
-            <div className={styles.container}>
-                <div className={styles.list}>
-                    {items.map((item) => (
-                        <EpisodeListItem
-                            channelOnly={channelOnly}
-                            channel={channels[item.channel_id]}
-                            item={item}
-                        />
-                    ))}
-                </div>
-            </div>
-        )
-    } else {
+    } 
+    else if (!withoutDate && "channel" in items) {
         return (
             <div className={styles.container}>
                 {Object.entries(groupByDate(items)).map(([date, items]) => (
@@ -59,13 +42,23 @@ const EpisodeList = ({
                             {items.map((item) => (
                                 <EpisodeListItem
                                     item={item}
-                                    channelOnly={channelOnly}
-                                    channel={channels[item.channel_id]}
                                 />
                             ))}
                         </div>
                     </div>
                 ))}
+            </div>
+        )
+    } else {
+        return (
+            <div className={styles.container}>
+                <div className={styles.list}>
+                    {items.map((item) => (
+                        <EpisodeListItem
+                            item={item}
+                        />
+                    ))}
+                </div>
             </div>
         )
     }

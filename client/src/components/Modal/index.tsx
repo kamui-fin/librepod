@@ -1,4 +1,4 @@
-import { SetStateAction, useState } from "react"
+import { SetStateAction } from "react"
 import Button from "../Button"
 import Divider from "../Divider"
 import styles from "./style.module.scss"

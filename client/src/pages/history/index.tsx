@@ -1,17 +1,30 @@
-import EpisodeList, { Episode } from "../../components/EpisodeList"
+import EpisodeList from "../../components/EpisodeList"
 import styles from "./style.module.scss"
 import SearchBar from "../../components/Search"
 import Layout from "../../components/Layout"
 import ActionTitleBar from "../../components/ActionTitleBar"
 import Modal from "../../components/Modal"
 import { useState } from "react"
-import { useOutletContext } from "react-router-dom"
-import { clearHistory } from "../../lib/api"
+import { clearHistory, getHistory } from "../../lib/api"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { ChannelEpisode } from "@/lib/types"
 
 const HistoryPage = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false)
-    const { history, subsById } = useOutletContext()
-    const [currHistory, setHistory] = useState(history)
+    const queryClient = useQueryClient()
+    const clearMutation = useMutation({
+        mutationFn: clearHistory,
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['history'] })
+        }
+    })
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ['history'],
+        queryFn: getHistory,
+    })
+    const defaultValue: ChannelEpisode[] = [];
+    const history = data || defaultValue
+    const [foundEntries, setFoundEntries] = useState<ChannelEpisode[]>(history)
     return (
         <Layout>
             <Layout inner>
@@ -22,7 +35,7 @@ const HistoryPage = () => {
                             text="Find episodes"
                             data={history}
                             cmpKeys={["title", "description"]}
-                            onSearch={(filtered) => setHistory(filtered)}
+                            onSearch={(filtered) => setFoundEntries(filtered)}
                         />,
                     ]}
                 />
@@ -32,7 +45,7 @@ const HistoryPage = () => {
                 >
                     <span>Clear History</span>
                 </div>
-                <EpisodeList items={currHistory} channels={subsById} />
+                <EpisodeList items={foundEntries} />
                 {showConfirmModal && (
                     <Modal
                         title="Clear History"
@@ -46,11 +59,7 @@ const HistoryPage = () => {
                         primary={true}
                         open={showConfirmModal}
                         setOpen={setShowConfirmModal}
-                        onDone={async () => {
-                            const res = clearHistory()
-                            console.log(res)
-                            setHistory([])
-                        }}
+                        onDone={() => { clearMutation.mutateAsync().then().catch(console.error); }}
                     />
                 )}
             </Layout>

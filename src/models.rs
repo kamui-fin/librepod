@@ -3,7 +3,7 @@ use axum_login::AuthUser;
 use chrono::{DateTime, Utc};
 use feed_rs::model::{Category, Entry, Feed};
 use serde::Serialize;
-use sqlx::FromRow;
+use sqlx::{postgres::PgRow, Decode, FromRow, Row};
 use uuid::Uuid;
 
 #[derive(Serialize, Debug, Clone, Default)]
@@ -100,6 +100,13 @@ impl PodcastEpisode {
             })
         }
     }
+}
+
+// Including channel because usually episode only doesn't make sense without context of channel
+#[derive(Serialize)]
+pub struct EpisodeWithChannel {
+    pub episode: PodcastEpisode,
+    pub channel: PodcastChannel,
 }
 
 pub struct RssData {

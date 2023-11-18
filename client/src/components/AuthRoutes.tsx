@@ -1,18 +1,21 @@
 import { Navigate } from "react-router-dom"
 import { useAuth } from "@/lib/useAuth"
+import { ReactNode } from "react"
 
-export const ProtectedRoute = ({ children }) => {
-    const { user } = useAuth()
-    if (user === undefined || user == null) {
+interface ChildrenProps {
+    children: ReactNode;
+}
+
+export const ProtectedRoute = ({ children }: ChildrenProps) => {
+    const  auth  = useAuth()
+    if (!auth || (auth && !auth.user)) 
         return <Navigate to="/login" />
-    }
     return children
 }
 
-export const UnprotectedRoute = ({ children }) => {
-    const { user } = useAuth()
-    if (user) {
+export const UnprotectedRoute = ({ children }: ChildrenProps) => {
+    const auth = useAuth()
+    if (auth && auth.user)
         return <Navigate to="/" />
-    }
     return children
 }

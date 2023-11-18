@@ -1,4 +1,4 @@
-export interface Subscription {
+export interface Channel {
     id: string
     title: string
     rss_link: string
@@ -10,13 +10,13 @@ export interface Subscription {
     image: string | null
 }
 
-export type SubscriptionById = {
-    [id: string]: Subscription;
+export type ChannelById = {
+    [id: string]: Channel;
 }
 
 export interface Episode {
     id: string
-    channel_id: string
+    channel: Channel
     title: string
     published: number
     website_link: string
@@ -27,11 +27,11 @@ export interface Episode {
 }
 
 export interface ChannelEpisodes {
-    channel: Subscription
+    channel: Channel
     episodes: Episode[]
 }
 
 export interface ChannelEpisode {
-    channel: Subscription
+    channel: Channel
     episode: Episode
 }

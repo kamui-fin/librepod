@@ -4,11 +4,11 @@ import { MdDelete } from "react-icons/md"
 import cx from "classnames"
 import { useEffect, useRef, useState } from "react"
 import { Link } from "react-router-dom"
-import { Subscription } from "../../lib/types"
+import { Channel } from "../../lib/types"
 import { deleteSubscription } from "../../lib/api"
 
 interface Props {
-    sub: Subscription
+    sub: Channel
     onDelete: () => void
 }
 
@@ -18,9 +18,9 @@ const SubscriptionCard = ({ sub, onDelete }: Props) => {
     const focusRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
         if (openContext) {
-            focusRef.current.focus()
+            focusRef?.current?.focus()
         } else {
-            focusRef.current.blur()
+            focusRef?.current?.blur()
         }
     }, [openContext])
     return (
@@ -30,7 +30,7 @@ const SubscriptionCard = ({ sub, onDelete }: Props) => {
                     [styles.unwrapped]: !openContext,
                 })}
             >
-                <img src={image} />
+                <img src={image || ""} />
                 <Link to={`/subscriptions/channel/${id}`}>
                     <h3>{title}</h3>
                 </Link>
@@ -41,7 +41,6 @@ const SubscriptionCard = ({ sub, onDelete }: Props) => {
                         [styles.circle]: openContext,
                     })}
                     onMouseUp={() => {
-                        console.log(openContext)
                         setOpenContext(!openContext)
                     }}
                 >
@@ -56,10 +55,8 @@ const SubscriptionCard = ({ sub, onDelete }: Props) => {
             >
                 <div
                     className={cx(styles.delete, styles.menuItem)}
-                    onClick={async () => {
-                        const res = await deleteSubscription(id)
-                        onDelete()
-                        console.log(res)
+                    onClick={() => {
+                        deleteSubscription(id).then(onDelete).catch(console.error)
                     }}
                 >
                     <MdDelete />
