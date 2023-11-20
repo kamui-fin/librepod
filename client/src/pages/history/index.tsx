@@ -1,5 +1,4 @@
 import EpisodeList from "../../components/EpisodeList"
-import styles from "./style.module.scss"
 import SearchBar from "../../components/Search"
 import Layout from "../../components/Layout"
 import ActionTitleBar from "../../components/ActionTitleBar"
@@ -8,6 +7,9 @@ import { useState } from "react"
 import { clearHistory, getHistory } from "../../lib/api"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Episode } from "@/lib/types"
+import Button from "@/components/Button"
+import { VscClearAll } from "react-icons/vsc"
+import { keywordSelect } from "@/lib/search"
 
 const HistoryPage = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -23,29 +25,25 @@ const HistoryPage = () => {
         queryFn: getHistory,
     })
     const defaultValue: Episode[] = []
-    const history = data || defaultValue
-    const [foundEntries, setFoundEntries] = useState<Episode[]>(history)
+    const [query, setQuery] = useState("")
+    const history = data
+        ? keywordSelect(data, ["title", "description"], query)
+        : defaultValue
+
     return (
         <Layout>
             <Layout inner>
                 <ActionTitleBar
                     title="Listen History"
                     actions={[
-                        <SearchBar
-                            text="Find episodes"
-                            data={history}
-                            cmpKeys={["title", "description"]}
-                            onSearch={(filtered) => setFoundEntries(filtered)}
-                        />,
+                        <Button onClick={() => setShowConfirmModal(true)}>
+                            <VscClearAll />
+                            <span>Clear History</span>
+                        </Button>,
+                        <SearchBar text="Find episodes" onSearch={setQuery} />,
                     ]}
                 />
-                <div
-                    className={styles.clearHistory}
-                    onClick={() => setShowConfirmModal(true)}
-                >
-                    <span>Clear History</span>
-                </div>
-                <EpisodeList withThumbnail items={foundEntries} />
+                <EpisodeList withThumbnail items={history} />
                 {showConfirmModal && (
                     <Modal
                         title="Clear History"

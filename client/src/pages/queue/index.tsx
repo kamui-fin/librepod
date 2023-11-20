@@ -1,10 +1,11 @@
 import React, { useState } from "react"
-import styles from "./style.module.scss"
 import Layout from "../../components/Layout"
 import ActionTitleBar from "../../components/ActionTitleBar"
 import Modal from "../../components/Modal"
 import EpisodeList from "../../components/EpisodeList"
 import { usePlayer } from "../../lib/usePlayer"
+import Button from "@/components/Button"
+import { VscClearAll } from "react-icons/vsc"
 
 const QueuePage = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -13,13 +14,15 @@ const QueuePage = () => {
     return (
         <Layout>
             <Layout inner>
-                <ActionTitleBar title="Queue" />
-                <div
-                    className={styles.clearQueue}
-                    onClick={() => setShowConfirmModal(true)}
-                >
-                    <span>Clear Queue</span>
-                </div>
+                <ActionTitleBar
+                    title="Queue"
+                    actions={[
+                        <Button onClick={() => setShowConfirmModal(true)}>
+                            <VscClearAll />
+                            <span>Clear Queue</span>
+                        </Button>,
+                    ]}
+                />
                 <EpisodeList withoutDate={true} withThumbnail items={queue} />
                 {showConfirmModal && (
                     <Modal

@@ -16,7 +16,7 @@ module.exports = {
         project: true,
         tsconfigRootDir: __dirname,
     },
-    plugins: ["react-refresh", "unused-imports"],
+    plugins: ["unused-imports"],
     rules: {
         "@typescript-eslint/no-non-null-assertion": "off",
         "no-unused-vars": "off", // or "@typescript-eslint/no-unused-vars": "off",

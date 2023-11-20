@@ -1,11 +1,10 @@
 import styles from "./style.module.scss"
-import { FiMoreVertical } from "react-icons/fi"
-import { MdDelete } from "react-icons/md"
 import cx from "classnames"
-import { useEffect, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 import { Channel } from "../../lib/types"
-import { deleteSubscription } from "../../lib/api"
+import DropdownContextMenu from "../DropdownContextMenu"
+import { useState } from "react"
+import { MdDelete } from "react-icons/md"
 
 interface Props {
     sub: Channel
@@ -14,20 +13,12 @@ interface Props {
 
 const SubscriptionCard = ({ sub, onDelete }: Props) => {
     const { id, image, title, num_episodes } = sub
-    const [openContext, setOpenContext] = useState<boolean>(false)
-    const focusRef = useRef<HTMLDivElement>(null)
-    useEffect(() => {
-        if (openContext) {
-            focusRef?.current?.focus()
-        } else {
-            focusRef?.current?.blur()
-        }
-    }, [openContext])
+    const [contextOpen, setContextOpen] = useState(false)
     return (
         <div className={styles.container}>
             <div
                 className={cx(styles.card, {
-                    [styles.unwrapped]: !openContext,
+                    [styles.unwrapped]: !contextOpen,
                 })}
             >
                 <img src={image || ""} />
@@ -35,33 +26,17 @@ const SubscriptionCard = ({ sub, onDelete }: Props) => {
                     <h3>{title}</h3>
                 </Link>
                 <p>{num_episodes} episodes</p>
-
-                <div
-                    className={cx(styles.contextMenu, {
-                        [styles.circle]: openContext,
-                    })}
-                    onMouseUp={() => {
-                        setOpenContext(!openContext)
-                    }}
-                >
-                    <FiMoreVertical />
-                </div>
-            </div>
-            <div
-                className={cx(styles.menu, { [styles.show]: openContext })}
-                tabIndex={0}
-                ref={focusRef}
-                onBlur={() => setOpenContext(false)}
-            >
-                <div
-                    className={cx(styles.delete, styles.menuItem)}
-                    onClick={() => {
-                        deleteSubscription(id).then(onDelete).catch(console.error)
-                    }}
-                >
-                    <MdDelete />
-                    <span>Delete</span>
-                </div>
+                <DropdownContextMenu
+                    onChange={setContextOpen}
+                    menuItemProps={[
+                        {
+                            icon: <MdDelete />,
+                            text: "Delete",
+                            onClick: onDelete,
+                            className: styles.delete,
+                        },
+                    ]}
+                />
             </div>
         </div>
     )

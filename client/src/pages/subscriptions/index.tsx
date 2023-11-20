@@ -8,7 +8,11 @@ import ActionTitleBar from "../../components/ActionTitleBar"
 import Modal from "../../components/Modal"
 import Input from "../../components/Input"
 import { useState } from "react"
-import { addSubscription, getSubscriptions } from "../../lib/api"
+import {
+    addSubscription,
+    deleteSubscription,
+    getSubscriptions,
+} from "../../lib/api"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { keywordSelect } from "@/lib/search"
 
@@ -19,6 +23,13 @@ const SubscriptionsPage = () => {
     const queryClient = useQueryClient()
     const addMutation = useMutation({
         mutationFn: addSubscription,
+        onSuccess: async (channel) => {
+            await queryClient.invalidateQueries({ queryKey: ["subscriptions"] })
+            await queryClient.invalidateQueries({ queryKey: ["feed"] })
+        },
+    })
+    const deleteMutation = useMutation({
+        mutationFn: deleteSubscription,
         onSuccess: async (channel) => {
             await queryClient.invalidateQueries({ queryKey: ["subscriptions"] })
             await queryClient.invalidateQueries({ queryKey: ["feed"] })
@@ -56,10 +67,11 @@ const SubscriptionsPage = () => {
                         subscriptions.map((currSub) => (
                             <SubscriptionCard
                                 sub={currSub}
-                                onDelete={async () => {
-                                    await queryClient.invalidateQueries({
-                                        queryKey: ["subscriptions"],
-                                    })
+                                onDelete={() => {
+                                    deleteMutation
+                                        .mutateAsync(currSub.id)
+                                        .then()
+                                        .catch(console.error)
                                 }}
                             />
                         ))
