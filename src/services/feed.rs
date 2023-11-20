@@ -218,15 +218,21 @@ pub async fn get_channel_episodes(channel_id: Uuid, pool: &PgPool) -> Result<Vec
     Ok(episodes)
 }
 
-pub async fn get_episode(episode_id: Uuid, pool: &PgPool) -> Result<Option<PodcastEpisode>> {
-    let episode = sqlx::query_as!(
-        PodcastEpisode,
+pub async fn get_episode(episode_id: Uuid, pool: &PgPool) -> Result<Option<EpisodeWithChannel>> {
+    let episode = sqlx::query(
         r#"
-        SELECT * FROM episode
-        WHERE id = $1
+        SELECT e.channel_id, e.id, e.title, e.website_link, e.published, e.description, e.content, e.tags, e.audio_link, 
+               c.id, c.title, c.rss_link, c.website_link, c.author, c.description, c.tags, 
+                   COALESCE((SELECT COUNT(episode.id) FROM episode WHERE episode.channel_id = c.id), 0) AS "c.num_episodes",
+                   c.image
+        FROM user_subscriptions AS us
+        LEFT JOIN episode AS e ON e.channel_id = us.channel_id
+        LEFT JOIN channel AS c ON c.id = e.channel_id
+        WHERE e.id = $1
         "#,
-        episode_id
     )
+    .bind(episode_id)
+    .map(episode_channel_from_row)
     .fetch_optional(pool)
     .await?;
     Ok(episode)
@@ -338,18 +344,23 @@ pub async fn get_channel_last_published(
     }
 }
 
-pub async fn get_history(user_id: Uuid, pool: &PgPool) -> Result<Vec<PodcastEpisode>> {
-    let episodes = sqlx::query_as!(
-        PodcastEpisode,
+pub async fn get_history(user_id: Uuid, pool: &PgPool) -> Result<Vec<EpisodeWithChannel>> {
+    let episodes = sqlx::query(
         r#"
-        SELECT episode.* FROM user_watch_history
-        LEFT JOIN episode ON episode.id = user_watch_history.episode_id
+        SELECT e.channel_id, e.id, e.title, e.website_link, e.published, e.description, e.content, e.tags, e.audio_link, 
+               c.id, c.title, c.rss_link, c.website_link, c.author, c.description, c.tags, 
+                   COALESCE((SELECT COUNT(episode.id) FROM episode WHERE episode.channel_id = c.id), 0) AS "c.num_episodes",
+                   c.image
+        FROM user_watch_history as wh
+        LEFT JOIN episode AS e ON episode.id = wh.episode_id
+        LEFT JOIN channel AS c ON c.id = e.channel_id
         WHERE user_id = $1
         ORDER BY published DESC
         LIMIT 20
         "#,
-        user_id
     )
+    .bind(user_id)
+    .map(episode_channel_from_row)
     .fetch_all(pool)
     .await?;
     Ok(episodes)

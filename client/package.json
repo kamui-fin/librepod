@@ -7,7 +7,8 @@
         "dev": "vite",
         "build": "tsc && vite build",
         "lint": "eslint src --fix --ext ts,tsx --report-unused-disable-directives --max-warnings 25",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "prepare": "cd .. && husky install client/.husky"
     },
     "dependencies": {
         "@tanstack/react-query": "5.0.5",
@@ -41,9 +42,17 @@
         "eslint": "^8.44.0",
         "eslint-plugin-react-hooks": "^4.6.0",
         "eslint-plugin-unused-imports": "^3.0.0",
+        "husky": "^8.0.0",
+        "lint-staged": "^15.1.0",
         "sass": "^1.63.6",
         "tsconfig-paths": "^4.2.0",
         "typescript": "^5.0.2",
         "vite": "^4.4.0"
+    },
+    "lint-staged": {
+        "**/*.{js,jsx,ts,tsx,json}": [
+            "npx prettier --write",
+            "npx eslint --fix"
+        ]
     }
 }
