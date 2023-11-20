@@ -1,21 +1,23 @@
-import { ChannelEpisode } from "../../lib/types"
+import { Episode } from "../../lib/types"
 import { getHumanDate } from "../../lib/utils"
-import EpisodeListItem, { EpisodeOnly } from "./EpisodeListItem"
+import EpisodeListItem from "./EpisodeListItem"
 import styles from "./style.module.scss"
 
 interface Props {
-    items: ChannelEpisode[] | EpisodeOnly[]
+    items: Episode[]
     withoutDate?: boolean
+    withThumbnail?: boolean
 }
 
 const EpisodeList = ({
     items,
     withoutDate = false,
+    withThumbnail = false,
 }: Props) => {
-    const groupByDate = <T extends EpisodeOnly>(eps: T[]) => {
+    const groupByDate = <T extends Episode>(eps: T[]) => {
         const grouped: { [key: string]: T[] } = {}
         for (const ep of eps) {
-            const date = getHumanDate(ep.episode.published)
+            const date = getHumanDate(ep.published)
             if (date in grouped) {
                 grouped[date].push(ep)
             } else {
@@ -31,8 +33,7 @@ const EpisodeList = ({
                 <p>No episodes were found.</p>
             </div>
         )
-    } 
-    else if (!withoutDate && "channel" in items) {
+    } else if (!withoutDate) {
         return (
             <div className={styles.container}>
                 {Object.entries(groupByDate(items)).map(([date, items]) => (
@@ -41,7 +42,8 @@ const EpisodeList = ({
                         <div className={styles.list}>
                             {items.map((item) => (
                                 <EpisodeListItem
-                                    item={item}
+                                    episode={item}
+                                    withThumbnail={withThumbnail}
                                 />
                             ))}
                         </div>
@@ -55,7 +57,8 @@ const EpisodeList = ({
                 <div className={styles.list}>
                     {items.map((item) => (
                         <EpisodeListItem
-                            item={item}
+                            episode={item}
+                            withThumbnail={withThumbnail}
                         />
                     ))}
                 </div>

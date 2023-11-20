@@ -8,27 +8,26 @@ import { AiFillPlayCircle } from "react-icons/ai"
 import { getHumanDate } from "../../lib/utils"
 import ContextMenu from "../../components/ContextMenu"
 import { MdPlaylistAdd } from "react-icons/md"
-import { usePlayer} from "../../lib/usePlayer"
+import { usePlayer } from "../../lib/usePlayer"
 import { getEpisodeById, markPlayed } from "@/lib/api"
 import { useQuery } from "@tanstack/react-query"
 
 const EpisodePage = () => {
     const { id } = useParams()
-    const defaultValue = {
-        episode: null,
-        channel: null,
-    }
-    const { data = defaultValue, isLoading } = useQuery({
-        queryKey: ['episode', id],
+    const { data: episode, isLoading } = useQuery({
+        queryKey: ["episode", id],
         queryFn: async () => {
             if (!id) throw Error("Invalid episode ID")
             return await getEpisodeById(id)
-        }, 
+        },
+        staleTime: Infinity,
+        refetchOnReconnect: false,
+        refetchOnWindowFocus: false,
     })
-    const { channel, episode } = data;
+
     const { addToQueue, addToFront } = usePlayer()
-    
-    if (!channel && !episode) {
+
+    if (!episode) {
         return <></>
     }
 
@@ -37,12 +36,12 @@ const EpisodePage = () => {
             <ActionTitleBar />
             <Layout inner>
                 <div className={styles.channel}>
-                    <img src={channel?.image || ''} alt="" />
+                    <img src={episode.channel_image || ""} alt="" />
                     <div className={styles.text}>
                         <Link
-                            to={`/subscriptions/channel/${channel.id}`}
+                            to={`/subscriptions/channel/${episode.channel_id}`}
                         >
-                            <h3>{channel.title}</h3>
+                            <h3>{episode.channel_title}</h3>
                         </Link>
                         <p>{getHumanDate(episode.published)}</p>
                     </div>
@@ -65,13 +64,19 @@ const EpisodePage = () => {
                         menuItems={[
                             {
                                 text: "Mark Played",
-                                handler: () => { markPlayed(episode).then().catch(console.error) } ,
+                                handler: () => {
+                                    markPlayed(episode)
+                                        .then()
+                                        .catch(console.error)
+                                },
                             },
                         ]}
                     />
                 </div>
                 <Divider />
-                <div className={styles.content}>{parse(episode.content || '')}</div>
+                <div className={styles.content}>
+                    {parse(episode.content || episode.description || "")}
+                </div>
             </Layout>
         </Layout>
     )

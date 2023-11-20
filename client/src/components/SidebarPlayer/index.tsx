@@ -1,41 +1,60 @@
 import { BiSkipNext, BiSkipPrevious } from "react-icons/bi"
 import cx from "classnames"
 import { Range, getTrackBackground } from "react-range"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { MdPause, MdReplay10, MdForward10 } from "react-icons/md"
 import styles from "./style.module.scss"
 import { BsFillPlayFill } from "react-icons/bs"
 import { usePlayer } from "../../lib/usePlayer"
 import { stripHtml } from "string-strip-html"
+import { Duration } from "luxon"
+import { useGlobalAudioPlayer } from "react-use-audio-player"
 
 const SidebarPlayer = () => {
-    const [values, setValues] = useState([0])
+    const [posPercent, setPosPercent] = useState(0)
     const [paused, setPaused] = useState(true)
-    // const { episodes, subsById } = test
+    const [dragging, setDragging] = useState(false)
+
     const {
         currentEpisode,
-        duration,
-        addToQueue,
-        pause,
-        play,
-        queue,
-        getLuxonTotalDuration,
         playNext,
         playPrevious,
         skipTenSeconds,
         replayTenSeconds,
-        seek,
-        currentDuration,
-        queueFromList,
     } = usePlayer()
 
-    // useEffect(() => {
-    //     queueFromList(episodes.slice(0, 6))
-    // }, [])
+    const { getPosition, duration, seek, pause, play } = useGlobalAudioPlayer()
+
+    const frameRef = useRef<number>()
+
+    const formatLuxon = (seconds: number) => {
+        return Duration.fromMillis(seconds * 1000).shiftTo(
+            "hours",
+            "minutes",
+            "seconds",
+        )
+    }
 
     useEffect(() => {
-        setValues([Math.ceil(currentDuration.as("seconds")) || 0])
-    }, [currentDuration])
+        const animate = () => {
+            if (!dragging) {
+                setPosPercent(
+                    (Math.ceil(formatLuxon(getPosition()).as("seconds")) *
+                        100) /
+                        duration || 0,
+                )
+                frameRef.current = requestAnimationFrame(animate)
+            }
+        }
+
+        frameRef.current = window.requestAnimationFrame(animate)
+
+        return () => {
+            if (frameRef.current) {
+                cancelAnimationFrame(frameRef.current)
+            }
+        }
+    }, [dragging])
 
     const pauseUnpause = () => {
         setPaused(!paused)
@@ -52,29 +71,36 @@ const SidebarPlayer = () => {
 
     return (
         <div className={styles.player}>
-            {/* <img src={subsById[currentEpisode.channel_id]?.image || ''} /> */}
+            <img src={currentEpisode.channel_image || ""} />
             <h3>{currentEpisode.title.substring(0, 20) + "..."}</h3>
             <p>
-                {stripHtml(currentEpisode.description || '').result.substring(0, 20) +
-                    "..."}
+                {stripHtml(currentEpisode.description || "").result.substring(
+                    0,
+                    20,
+                ) + "..."}
             </p>
             <div className={styles.slider}>
-                <span>{currentDuration.toFormat("hh:mm:ss")}</span>
+                <span>{formatLuxon(getPosition()).toFormat("hh:mm:ss")}</span>
                 <Range
-                    values={values}
-                    min={0}
-                    max={duration || 1}
-                    step={1}
+                    values={[posPercent]}
                     onChange={(values) => {
-                        pause()
-                        setPaused(true)
-                        seek(values[0])
-                        setValues(values)
+                        const [pos] = values
+
+                        // pause()
+                        // setPaused(true)
+                        setDragging(true)
+                        setPosPercent(pos)
                     }}
                     onFinalChange={(values) => {
+                        const [pos] = values
+                        console.log(pos, Math.round((pos * duration) / 100))
+
+                        setPosPercent(pos)
+                        seek(Math.round((pos * duration) / 100))
+                        setDragging(false)
+
                         play()
                         setPaused(false)
-                        setValues(values)
                     }}
                     renderTrack={({ props, children }) => (
                         <div
@@ -83,10 +109,10 @@ const SidebarPlayer = () => {
                             style={{
                                 ...props.style,
                                 background: getTrackBackground({
-                                    values,
+                                    values: [posPercent],
                                     colors: ["#b8c0cc", "#3c4554"],
                                     min: 0,
-                                    max: duration,
+                                    max: 100,
                                 }),
                             }}
                         >
@@ -98,7 +124,7 @@ const SidebarPlayer = () => {
                     )}
                 />
                 <span>
-                    {getLuxonTotalDuration().toFormat("hh:mm:ss") || "--:--"}
+                    {formatLuxon(duration).toFormat("hh:mm:ss") || "--:--"}
                 </span>
             </div>
             <div className={styles.controls}>

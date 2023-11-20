@@ -37,6 +37,10 @@
 
 .content {
     font-size: 1.3rem;
+
+    p {
+        color: $fg-main !important;
+    }
 }
 
 .buttons {

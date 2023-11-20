@@ -4,7 +4,7 @@ import Layout from "../../components/Layout"
 import ActionTitleBar from "../../components/ActionTitleBar"
 import Modal from "../../components/Modal"
 import EpisodeList from "../../components/EpisodeList"
-import { usePlayer} from "../../lib/usePlayer"
+import { usePlayer } from "../../lib/usePlayer"
 
 const QueuePage = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -20,10 +20,7 @@ const QueuePage = () => {
                 >
                     <span>Clear Queue</span>
                 </div>
-                <EpisodeList
-                    withoutDate={true}
-                    items={queue.map(episode => ({episode}))}
-                />
+                <EpisodeList withoutDate={true} withThumbnail items={queue} />
                 {showConfirmModal && (
                     <Modal
                         title="Clear Queue"

@@ -7,7 +7,6 @@ use anyhow::anyhow;
 use anyhow::Result;
 use chrono::DateTime;
 use chrono::Utc;
-use reqwest::Client;
 use sqlx::postgres::types::PgInterval;
 use sqlx::postgres::PgRow;
 use sqlx::PgPool;
@@ -198,15 +197,16 @@ pub async fn get_channel(id: Uuid, pool: &PgPool) -> Result<Option<PodcastChanne
     Ok(channel)
 }
 
-fn pg_interval_to_duration(interval: PgInterval) -> Duration {
-    Duration::from_micros(interval.microseconds as u64)
-}
-
-pub async fn get_channel_episodes(channel_id: Uuid, pool: &PgPool) -> Result<Vec<PodcastEpisode>> {
+pub async fn get_channel_episodes(
+    channel_id: Uuid,
+    pool: &PgPool,
+) -> Result<Vec<PodcastEpisodeDbResult>> {
     let episodes = sqlx::query_as!(
-        PodcastEpisode,
+        PodcastEpisodeDbResult,
         r#"
-        SELECT * FROM episode
+        SELECT e.*, c.title as channel_title, c.image as channel_image
+        FROM episode AS e
+        LEFT JOIN channel AS c ON c.id = e.channel_id
         WHERE channel_id = $1
         ORDER BY published DESC
         LIMIT 20
@@ -218,62 +218,34 @@ pub async fn get_channel_episodes(channel_id: Uuid, pool: &PgPool) -> Result<Vec
     Ok(episodes)
 }
 
-pub async fn get_episode(episode_id: Uuid, pool: &PgPool) -> Result<Option<EpisodeWithChannel>> {
-    let episode = sqlx::query(
+pub async fn get_episode(
+    episode_id: Uuid,
+    pool: &PgPool,
+) -> Result<Option<PodcastEpisodeDbResult>> {
+    let episode = sqlx::query_as!(
+        PodcastEpisodeDbResult,
         r#"
-        SELECT e.channel_id, e.id, e.title, e.website_link, e.published, e.description, e.content, e.tags, e.audio_link, 
-               c.id, c.title, c.rss_link, c.website_link, c.author, c.description, c.tags, 
-                   COALESCE((SELECT COUNT(episode.id) FROM episode WHERE episode.channel_id = c.id), 0) AS "c.num_episodes",
-                   c.image
+        SELECT e.*, c.title as channel_title, c.image as channel_image
         FROM user_subscriptions AS us
         LEFT JOIN episode AS e ON e.channel_id = us.channel_id
         LEFT JOIN channel AS c ON c.id = e.channel_id
         WHERE e.id = $1
         "#,
+        episode_id,
     )
-    .bind(episode_id)
-    .map(episode_channel_from_row)
     .fetch_optional(pool)
     .await?;
     Ok(episode)
 }
 
-fn episode_channel_from_row(row: PgRow) -> EpisodeWithChannel {
-    let episode = PodcastEpisode {
-        channel_id: row.get("e.channel_id"),
-        id: row.get("e.id"),
-        title: row.get("e.title"),
-        website_link: row.get("e.website_link"),
-        published: row.get("e.published"),
-        description: row.get("e.description"),
-        content: row.get("e.content"),
-        tags: row.get("e.tags"),
-        audio_link: row.get("e.audio_link"),
-    };
-    let channel = PodcastChannel {
-        id: row.get("c.id"),
-        title: row.get("c.title"),
-        rss_link: row.get("c.rss_link"),
-        website_link: row.get("c.website_link"),
-        author: row.get("c.author"),
-        description: row.get("c.description"),
-        tags: row.get("c.tags"),
-        num_episodes: row.get("c.num_episodes"),
-        image: row.get("c.image"),
-    };
-    EpisodeWithChannel { episode, channel }
-}
-
 pub async fn get_subscription_episodes(
     user_id: Uuid,
     pool: &PgPool,
-) -> Result<Vec<EpisodeWithChannel>> {
-    let episodes = sqlx::query(
+) -> Result<Vec<PodcastEpisodeDbResult>> {
+    let episodes = sqlx::query_as!(
+        PodcastEpisodeDbResult,
         r#"
-        SELECT e.channel_id, e.id, e.title, e.website_link, e.published, e.description, e.content, e.tags, e.audio_link, 
-               c.id, c.title, c.rss_link, c.website_link, c.author, c.description, c.tags, 
-                   COALESCE((SELECT COUNT(episode.id) FROM episode WHERE episode.channel_id = c.id), 0) AS "c.num_episodes",
-                   c.image
+        SELECT e.*, c.title as channel_title, c.image as channel_image
         FROM user_subscriptions AS us
         LEFT JOIN episode AS e ON e.channel_id = us.channel_id
         LEFT JOIN channel AS c ON c.id = e.channel_id
@@ -281,9 +253,8 @@ pub async fn get_subscription_episodes(
         ORDER BY published DESC
         LIMIT 20
         "#,
+        user_id
     )
-    .bind(user_id)
-    .map(episode_channel_from_row)
     .fetch_all(pool)
     .await?;
     Ok(episodes)
@@ -344,23 +315,20 @@ pub async fn get_channel_last_published(
     }
 }
 
-pub async fn get_history(user_id: Uuid, pool: &PgPool) -> Result<Vec<EpisodeWithChannel>> {
-    let episodes = sqlx::query(
+pub async fn get_history(user_id: Uuid, pool: &PgPool) -> Result<Vec<PodcastEpisodeDbResult>> {
+    let episodes = sqlx::query_as!(
+        PodcastEpisodeDbResult,
         r#"
-        SELECT e.channel_id, e.id, e.title, e.website_link, e.published, e.description, e.content, e.tags, e.audio_link, 
-               c.id, c.title, c.rss_link, c.website_link, c.author, c.description, c.tags, 
-                   COALESCE((SELECT COUNT(episode.id) FROM episode WHERE episode.channel_id = c.id), 0) AS "c.num_episodes",
-                   c.image
+        SELECT e.*, c.title as channel_title, c.image as channel_image
         FROM user_watch_history as wh
-        LEFT JOIN episode AS e ON episode.id = wh.episode_id
+        LEFT JOIN episode AS e ON e.id = wh.episode_id
         LEFT JOIN channel AS c ON c.id = e.channel_id
         WHERE user_id = $1
         ORDER BY published DESC
         LIMIT 20
         "#,
+        user_id
     )
-    .bind(user_id)
-    .map(episode_channel_from_row)
     .fetch_all(pool)
     .await?;
     Ok(episodes)

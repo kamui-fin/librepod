@@ -9,18 +9,18 @@ import { DateTime } from "luxon"
 import { usePlayer } from "@/lib/usePlayer"
 import { useQuery } from "@tanstack/react-query"
 import { getFeed } from "@/lib/api"
-import { ChannelEpisode, Episode } from "@/lib/types"
+import { Episode } from "@/lib/types"
 import { useState } from "react"
+import { keywordSelect } from "@/lib/search"
 
 const FeedPage = () => {
     const { data } = useQuery({
-        queryKey: ['feed'],
-        queryFn: getFeed
+        queryKey: ["feed"],
+        queryFn: getFeed,
+        staleTime: 60 * 1000 * 60 * 10,
+        refetchOnReconnect: false,
+        refetchOnWindowFocus: false,
     })
-    const defaultValue: ChannelEpisode[] = [];
-    const feed = data || defaultValue
-    const [foundEntries, setFoundEntries] = useState<ChannelEpisode[]>(feed)
-
     const { queueFromList } = usePlayer()
 
     const getEpisodeDateDiff = (ep: Episode) =>
@@ -28,48 +28,49 @@ const FeedPage = () => {
             .diff(DateTime.now(), ["days", "months", "year", "hours"])
             .toObject()
 
-    const filterEpisodes = (text: string) => {
-        switch (text) {
+    const [dateFilter, setDateFilter] = useState("All Time")
+    const [queryFilter, setQueryFilter] = useState("")
+
+    const filterEpisodesByDate = (episodes: Episode[]) => {
+        switch (dateFilter) {
             case "Today":
-                setFoundEntries(
-                    feed.filter((ep) => {
-                        const diff = getEpisodeDateDiff(ep.episode)
-                        return (
-                            diff.years === 0 &&
-                            diff.months === 0 &&
-                            diff.days === 0 &&
-                            diff.hours! >= -24
-                        )
-                    }),
-                )
-                break;
+                return episodes.filter((ep) => {
+                    const diff = getEpisodeDateDiff(ep)
+                    return (
+                        diff.years === 0 &&
+                        diff.months === 0 &&
+                        diff.days === 0 &&
+                        diff.hours! >= -24
+                    )
+                })
             case "2 Weeks":
-                setFoundEntries(
-                    feed.filter((ep) => {
-                        const diff = getEpisodeDateDiff(ep.episode)
-                        return (
-                            diff.years === 0 &&
-                            diff.months === 0 &&
-                            diff.days! >= -14
-                        )
-                    }),
-                )
-                break
+                return episodes.filter((ep) => {
+                    const diff = getEpisodeDateDiff(ep)
+                    return (
+                        diff.years === 0 &&
+                        diff.months === 0 &&
+                        diff.days! >= -14
+                    )
+                })
             case "Past Month":
-                setFoundEntries(
-                    feed.filter((ep) => {
-                        const diff = getEpisodeDateDiff(ep.episode)
-                        return diff.years === 0 && diff.months! >= -1
-                    }),
-                )
-                break
+                return episodes.filter((ep) => {
+                    const diff = getEpisodeDateDiff(ep)
+                    return diff.years === 0 && diff.months! >= -1
+                })
             case "All Time":
-                setFoundEntries(feed)
-                break
+                return episodes
             default:
-                break
+                return episodes
         }
     }
+
+    const filterEpisodes = (episodes: Episode[]) =>
+        keywordSelect(
+            filterEpisodesByDate(episodes),
+            ["title", "description"],
+            queryFilter,
+        )
+    const feed = data ? filterEpisodes(data) : []
 
     return (
         <Layout>
@@ -80,7 +81,7 @@ const FeedPage = () => {
                         <Button
                             secondary
                             onClick={() => {
-                                queueFromList(foundEntries.map(entry => entry.episode))
+                                queueFromList(feed)
                             }}
                         >
                             <BsFillPlayFill />
@@ -96,17 +97,15 @@ const FeedPage = () => {
                             ]}
                             defaultIndex={4}
                             icon={<BsCalendarWeek />}
-                            onDone={filterEpisodes}
+                            onDone={setDateFilter}
                         />,
                         <SearchBar
                             text="Find episodes"
-                            data={foundEntries}
-                            cmpKeys={["title", "description"]}
-                            onSearch={(data) => setFoundEntries(data)}
+                            onSearch={setQueryFilter}
                         />,
                     ]}
                 />
-                <EpisodeList items={foundEntries} />
+                <EpisodeList withThumbnail items={feed} />
             </Layout>
         </Layout>
     )

@@ -13,7 +13,7 @@ use uuid::Uuid;
 use crate::{
     config::AppContext,
     error::AppError,
-    models::{gen_uuid, EpisodeWithChannel, PodcastChannel, PodcastEpisode, User},
+    models::{gen_uuid, PodcastChannel, PodcastEpisode, PodcastEpisodeDbResult, User},
     services::feed,
 };
 

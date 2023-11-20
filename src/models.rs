@@ -67,6 +67,25 @@ pub struct PodcastEpisode {
     pub audio_link: String,
 }
 
+#[derive(Serialize, Debug, Clone)]
+pub struct PodcastEpisodeDbResult {
+    // base PodcastEpisode
+    pub channel_id: Uuid,
+    pub id: Uuid,
+    pub title: String,
+    pub website_link: String,
+    #[serde(with = "chrono::serde::ts_microseconds")]
+    pub published: DateTime<Utc>,
+    pub description: Option<String>,
+    pub content: Option<String>,
+    pub tags: Option<String>,
+    pub audio_link: String,
+
+    // channel additions
+    pub channel_title: String,
+    pub channel_image: Option<String>,
+}
+
 impl PodcastEpisode {
     pub fn from_feed_item(item: &Entry, source: &PodcastChannel) -> Option<Self> {
         let media = item
@@ -100,13 +119,6 @@ impl PodcastEpisode {
             })
         }
     }
-}
-
-// Including channel because usually episode only doesn't make sense without context of channel
-#[derive(Serialize)]
-pub struct EpisodeWithChannel {
-    pub episode: PodcastEpisode,
-    pub channel: PodcastChannel,
 }
 
 pub struct RssData {

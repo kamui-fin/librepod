@@ -8,9 +8,9 @@ import ActionTitleBar from "../../components/ActionTitleBar"
 import Modal from "../../components/Modal"
 import Input from "../../components/Input"
 import { useState } from "react"
-import { Channel } from "../../lib/types"
 import { addSubscription, getSubscriptions } from "../../lib/api"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { keywordSelect } from "@/lib/search"
 
 const SubscriptionsPage = () => {
     const [showAddModal, setShowAddModal] = useState(false)
@@ -19,17 +19,20 @@ const SubscriptionsPage = () => {
     const queryClient = useQueryClient()
     const addMutation = useMutation({
         mutationFn: addSubscription,
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ['subscriptions'] })
-        }
+        onSuccess: async (channel) => {
+            await queryClient.invalidateQueries({ queryKey: ["subscriptions"] })
+            await queryClient.invalidateQueries({ queryKey: ["feed"] })
+        },
     })
     const { data, isLoading, isError } = useQuery({
-        queryKey: ['subscriptions'],
+        queryKey: ["subscriptions"],
         queryFn: getSubscriptions,
     })
-    const defaultValue: Channel[] = [];
-    const subscriptionsById = data || defaultValue
-    const [foundSubs, setFoundSubs] = useState<Channel[]>(subscriptionsById)
+
+    const [filter, setFilter] = useState("")
+    const subscriptions = data
+        ? keywordSelect(data, ["title", "description"], filter)
+        : []
 
     return (
         <Layout>
@@ -42,21 +45,21 @@ const SubscriptionsPage = () => {
                         </Button>,
                         <SearchBar
                             text="Search channels"
-                            data={Object.values(subscriptionsById)}
-                            cmpKeys={["title", "description"]}
-                            onSearch={(filtered) => setFoundSubs(filtered)}
+                            onSearch={setFilter}
                         />,
                     ]}
                 />
                 <div className={styles.subs}>
-                    {!foundSubs.length ? (
+                    {!subscriptions.length ? (
                         <p>No channels found.</p>
                     ) : (
-                        foundSubs.map((currSub) => (
+                        subscriptions.map((currSub) => (
                             <SubscriptionCard
                                 sub={currSub}
-                                onDelete={() => {
-                                    setFoundSubs(foundSubs.filter((otherSub) => otherSub.id !== currSub.id))
+                                onDelete={async () => {
+                                    await queryClient.invalidateQueries({
+                                        queryKey: ["subscriptions"],
+                                    })
                                 }}
                             />
                         ))
@@ -75,8 +78,11 @@ const SubscriptionsPage = () => {
                     primary={false}
                     open={showAddModal}
                     setOpen={setShowAddModal}
-                    onDone={() =>  {
-                        addMutation.mutateAsync(addRssLink).then().catch(console.error);
+                    onDone={() => {
+                        addMutation
+                            .mutateAsync(addRssLink)
+                            .then()
+                            .catch(console.error)
                     }}
                 />
             </Layout>

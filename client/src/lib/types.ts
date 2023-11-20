@@ -11,12 +11,12 @@ export interface Channel {
 }
 
 export type ChannelById = {
-    [id: string]: Channel;
+    [id: string]: Channel
 }
 
 export interface Episode {
     id: string
-    channel: Channel
+    channel_id: string
     title: string
     published: number
     website_link: string
@@ -24,14 +24,11 @@ export interface Episode {
     description: string | null
     tags: string | null
     audio_link: string
+    channel_title: string
+    channel_image: string | null
 }
 
 export interface ChannelEpisodes {
     channel: Channel
     episodes: Episode[]
-}
-
-export interface ChannelEpisode {
-    channel: Channel
-    episode: Episode
 }

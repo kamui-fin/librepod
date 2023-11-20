@@ -7,7 +7,7 @@ import Modal from "../../components/Modal"
 import { useState } from "react"
 import { clearHistory, getHistory } from "../../lib/api"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { ChannelEpisode } from "@/lib/types"
+import { Episode } from "@/lib/types"
 
 const HistoryPage = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -15,16 +15,16 @@ const HistoryPage = () => {
     const clearMutation = useMutation({
         mutationFn: clearHistory,
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ['history'] })
-        }
+            await queryClient.invalidateQueries({ queryKey: ["history"] })
+        },
     })
     const { data, isLoading, isError } = useQuery({
-        queryKey: ['history'],
+        queryKey: ["history"],
         queryFn: getHistory,
     })
-    const defaultValue: ChannelEpisode[] = [];
+    const defaultValue: Episode[] = []
     const history = data || defaultValue
-    const [foundEntries, setFoundEntries] = useState<ChannelEpisode[]>(history)
+    const [foundEntries, setFoundEntries] = useState<Episode[]>(history)
     return (
         <Layout>
             <Layout inner>
@@ -45,7 +45,7 @@ const HistoryPage = () => {
                 >
                     <span>Clear History</span>
                 </div>
-                <EpisodeList items={foundEntries} />
+                <EpisodeList withThumbnail items={foundEntries} />
                 {showConfirmModal && (
                     <Modal
                         title="Clear History"
@@ -59,7 +59,12 @@ const HistoryPage = () => {
                         primary={true}
                         open={showConfirmModal}
                         setOpen={setShowConfirmModal}
-                        onDone={() => { clearMutation.mutateAsync().then().catch(console.error); }}
+                        onDone={() => {
+                            clearMutation
+                                .mutateAsync()
+                                .then()
+                                .catch(console.error)
+                        }}
                     />
                 )}
             </Layout>
