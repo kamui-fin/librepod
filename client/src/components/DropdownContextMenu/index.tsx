@@ -37,17 +37,18 @@ export const MenuItem = ({
 }
 
 interface Props {
-    onChange: (open: boolean) => void
+    onChange?: (open: boolean) => void
     menuItemProps: Omit<MenuItemProps, "setOpenContext">[]
+    className?: string
 }
 
-const DropdownContextMenu = ({ onChange, menuItemProps }: Props) => {
+const DropdownContextMenu = ({ className, onChange, menuItemProps }: Props) => {
     const toggleButtonRef = useRef(null)
     const contextMenuRef = useRef(null)
     const [openContext, setOpenContext] = useState<boolean>(false)
 
     useEffect(() => {
-        onChange(openContext)
+        if (onChange) onChange(openContext)
     }, [toggleButtonRef, contextMenuRef, onChange, openContext])
 
     useClickOutside([toggleButtonRef, contextMenuRef], () => {
@@ -58,7 +59,7 @@ const DropdownContextMenu = ({ onChange, menuItemProps }: Props) => {
         <>
             <div
                 ref={toggleButtonRef}
-                className={cx(styles.contextMenu, {
+                className={cx(styles.contextMenu, className, {
                     [styles.circle]: openContext,
                 })}
                 onMouseUp={() => {
@@ -66,15 +67,22 @@ const DropdownContextMenu = ({ onChange, menuItemProps }: Props) => {
                 }}
             >
                 <FiMoreVertical />
-            </div>
-            <div
-                ref={contextMenuRef}
-                className={cx(styles.menu, { [styles.show]: openContext })}
-                tabIndex={0}
-            >
-                {menuItemProps.map((props) => (
-                    <MenuItem {...props} setOpenContext={setOpenContext} />
-                ))}
+                <div className={styles.anchor}>
+                    <div
+                        ref={contextMenuRef}
+                        className={cx(styles.menu, {
+                            [styles.show]: openContext,
+                        })}
+                        tabIndex={0}
+                    >
+                        {menuItemProps.map((props) => (
+                            <MenuItem
+                                {...props}
+                                setOpenContext={setOpenContext}
+                            />
+                        ))}
+                    </div>
+                </div>
             </div>
         </>
     )

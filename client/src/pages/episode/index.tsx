@@ -6,11 +6,12 @@ import Divider from "../../components/Divider"
 import parse from "html-react-parser"
 import { AiFillPlayCircle } from "react-icons/ai"
 import { getHumanDate } from "../../lib/utils"
-import ContextMenu from "../../components/ContextMenu"
 import { MdPlaylistAdd } from "react-icons/md"
+import { MdDownloadDone } from "react-icons/md"
 import { usePlayer } from "../../lib/usePlayer"
 import { getEpisodeById, markPlayed } from "@/lib/api"
 import { useQuery } from "@tanstack/react-query"
+import DropdownContextMenu from "@/components/DropdownContextMenu"
 
 const EpisodePage = () => {
     const { id } = useParams()
@@ -60,11 +61,13 @@ const EpisodePage = () => {
                     >
                         <MdPlaylistAdd />
                     </div>
-                    <ContextMenu
-                        menuItems={[
+                    <DropdownContextMenu
+                        className={styles.dropdown}
+                        menuItemProps={[
                             {
+                                icon: <MdDownloadDone />,
                                 text: "Mark Played",
-                                handler: () => {
+                                onClick: () => {
                                     markPlayed(episode)
                                         .then()
                                         .catch(console.error)

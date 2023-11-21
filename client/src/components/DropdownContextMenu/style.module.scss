@@ -1,10 +1,8 @@
+.anchor {
+}
+
 .contextMenu {
-    position: absolute;
     border-radius: 50%;
-
-    bottom: 0.3rem;
-    right: 0.4rem;
-
     width: 1.6375rem;
     height: 1.6375rem;
     display: flex;
@@ -26,11 +24,10 @@
     position: relative;
     width: fit-content;
 }
+
 .menu {
     display: none;
     position: absolute;
-    right: -100px;
-    bottom: -30px;
     background: #272e38;
     border-radius: 0.4375rem;
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
@@ -40,6 +37,7 @@
     .menuItem {
         margin: 0.5rem 1rem;
         display: flex;
+        flex-shrink: 0;
         justify-content: center;
         align-items: center;
         gap: 0.6rem;

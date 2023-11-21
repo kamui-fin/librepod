@@ -44,3 +44,9 @@
 .delete svg path:last-child {
     fill: $accent-main;
 }
+
+.dropdown {
+    position: absolute;
+    bottom: 0.3rem;
+    right: 0.4rem;
+}

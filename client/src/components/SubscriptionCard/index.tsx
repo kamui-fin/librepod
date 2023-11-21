@@ -27,6 +27,7 @@ const SubscriptionCard = ({ sub, onDelete }: Props) => {
                 </Link>
                 <p>{num_episodes} episodes</p>
                 <DropdownContextMenu
+                    className={styles.dropdown}
                     onChange={setContextOpen}
                     menuItemProps={[
                         {
