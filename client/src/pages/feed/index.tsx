@@ -12,15 +12,17 @@ import { getFeed } from "@/lib/api"
 import { Episode } from "@/lib/types"
 import { useState } from "react"
 import { keywordSelect } from "@/lib/search"
+import Loader from "@/components/Loader"
 
 const FeedPage = () => {
-    const { data } = useQuery({
+    const { data, isLoading, isError, error } = useQuery({
         queryKey: ["feed"],
         queryFn: getFeed,
         staleTime: 60 * 1000 * 60 * 10,
         refetchOnReconnect: false,
         refetchOnWindowFocus: false,
     })
+
     const { queueFromList } = usePlayer()
 
     const getEpisodeDateDiff = (ep: Episode) =>
@@ -105,7 +107,9 @@ const FeedPage = () => {
                         />,
                     ]}
                 />
-                <EpisodeList withThumbnail items={feed} />
+                <Loader isLoading={isLoading}>
+                    <EpisodeList withThumbnail items={feed} />
+                </Loader>
             </Layout>
         </Layout>
     )

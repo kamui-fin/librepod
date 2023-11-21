@@ -15,8 +15,14 @@ import HistoryPage from "./pages/history"
 import ChannelPage from "./pages/channel"
 import EpisodePage from "./pages/episode"
 import QueuePage from "./pages/queue"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import {
+    MutationCache,
+    QueryCache,
+    QueryClient,
+    QueryClientProvider,
+} from "@tanstack/react-query"
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { toast } from "react-toastify"
 
 const rootPaths = [
     {
@@ -83,7 +89,24 @@ const router = createBrowserRouter([
     },
 ])
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+    mutationCache: new MutationCache({
+        onError: (error, query) => {
+            toast.error(`Something went wrong: ${error.message}`, {
+                position: "top-center",
+                autoClose: 5000,
+            })
+        },
+    }),
+    queryCache: new QueryCache({
+        onError: (error, query) => {
+            toast.error(`Something went wrong: ${error.message}`, {
+                position: "top-center",
+                autoClose: 5000,
+            })
+        },
+    }),
+})
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>

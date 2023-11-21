@@ -10,6 +10,7 @@ import { Episode } from "@/lib/types"
 import Button from "@/components/Button"
 import { VscClearAll } from "react-icons/vsc"
 import { keywordSelect } from "@/lib/search"
+import Loader from "@/components/Loader"
 
 const HistoryPage = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -43,7 +44,9 @@ const HistoryPage = () => {
                         <SearchBar text="Find episodes" onSearch={setQuery} />,
                     ]}
                 />
-                <EpisodeList withThumbnail items={history} />
+                <Loader isLoading={isLoading}>
+                    <EpisodeList withThumbnail items={history} />
+                </Loader>
                 {showConfirmModal && (
                     <Modal
                         title="Clear History"

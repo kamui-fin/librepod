@@ -18,6 +18,7 @@ import { getSubscriptionById } from "@/lib/api"
 import { useQuery } from "@tanstack/react-query"
 import { keywordSelect } from "@/lib/search"
 import { Episode } from "@/lib/types"
+import { useErrorToast } from "@/lib/useGlobalErrorToast"
 
 const ChannelPage = () => {
     const { id } = useParams()
@@ -27,7 +28,7 @@ const ChannelPage = () => {
     const [recentSort, setRecentSort] = useState("")
 
     const defaultValue = { channel: null, episodes: [] }
-    const { data } = useQuery({
+    const { data, error } = useQuery({
         queryKey: ["channel", id],
         queryFn: async () => {
             if (!id) throw Error("Invalid channel ID")
@@ -37,6 +38,7 @@ const ChannelPage = () => {
         refetchOnReconnect: false,
         refetchOnWindowFocus: false,
     })
+    useErrorToast({ error })
     const { channel, episodes } = data || defaultValue
 
     if (!channel) return <></>

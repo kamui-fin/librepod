@@ -15,6 +15,7 @@ import {
 } from "../../lib/api"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { keywordSelect } from "@/lib/search"
+import Loader from "@/components/Loader"
 
 const SubscriptionsPage = () => {
     const [showAddModal, setShowAddModal] = useState(false)
@@ -60,23 +61,25 @@ const SubscriptionsPage = () => {
                         />,
                     ]}
                 />
-                <div className={styles.subs}>
-                    {!subscriptions.length ? (
-                        <p>No channels found.</p>
-                    ) : (
-                        subscriptions.map((currSub) => (
-                            <SubscriptionCard
-                                sub={currSub}
-                                onDelete={() => {
-                                    deleteMutation
-                                        .mutateAsync(currSub.id)
-                                        .then()
-                                        .catch(console.error)
-                                }}
-                            />
-                        ))
-                    )}
-                </div>
+                <Loader isLoading={isLoading}>
+                    <div className={styles.subs}>
+                        {!subscriptions.length ? (
+                            <p>No channels found.</p>
+                        ) : (
+                            subscriptions.map((currSub) => (
+                                <SubscriptionCard
+                                    sub={currSub}
+                                    onDelete={() => {
+                                        deleteMutation
+                                            .mutateAsync(currSub.id)
+                                            .then()
+                                            .catch(console.error)
+                                    }}
+                                />
+                            ))
+                        )}
+                    </div>
+                </Loader>
                 <Modal
                     title="Add Subscription"
                     content={
