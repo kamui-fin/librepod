@@ -1,29 +1,23 @@
-mod cache;
 mod config;
+mod core;
 mod error;
-mod models;
 mod routes;
 mod services;
 
-use crate::{models::User, routes::build_router};
+use crate::core::user::User;
+use crate::routes::build_router;
 use anyhow::{Context, Result};
 use async_redis_session::RedisSessionStore;
 use axum_login::axum_sessions::SessionLayer;
-use axum_login::{AuthLayer, PostgresStore, SqlxStore};
+use axum_login::{AuthLayer, PostgresStore};
 use config::{get_app_uri, init_context};
-use rand::Rng;
-use sqlx::PgPool;
-use std::{
-    collections::HashMap,
-    sync::{Arc, RwLock},
-    time::Duration,
-};
+
+use std::time::Duration;
 use tokio_cron_scheduler::{Job, JobScheduler};
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
-use tracing::info;
+
 use tracing_subscriber;
-use uuid::Uuid;
 
 async fn start_fetch_feed_job() -> Result<()> {
     // generate feed job every 2 hrs

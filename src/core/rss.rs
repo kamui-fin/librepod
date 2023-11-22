@@ -1,10 +1,57 @@
-use axum_login::secrecy::SecretVec;
-use axum_login::AuthUser;
+use std::time::Duration;
+
 use chrono::{DateTime, Utc};
 use feed_rs::model::{Category, Entry, Feed};
 use serde::Serialize;
-use sqlx::{postgres::PgRow, Decode, FromRow, Row};
 use uuid::Uuid;
+
+use super::cache::{get_response_with_cache, CachedHttpResponse};
+
+// Data fetched straight from RSS link
+pub struct RssData {
+    pub channel: PodcastChannel,
+    pub episodes: Vec<PodcastEpisode>,
+}
+
+impl RssData {
+    pub fn from_feed(feed: &Feed, rss_link: String) -> Option<Self> {
+        let channel = PodcastChannel::from_feed(feed, rss_link);
+        if let Some(channel) = channel {
+            let mut episodes = feed
+                .entries
+                .iter()
+                .filter_map(|item| PodcastEpisode::from_feed_item(&item, &channel))
+                .collect::<Vec<PodcastEpisode>>();
+            episodes.sort_by_key(|ep| ep.published);
+            Some(Self { channel, episodes })
+        } else {
+            None
+        }
+    }
+}
+
+pub async fn get_rss_data(
+    source: &str,
+    redis_conn: &mut redis::aio::ConnectionManager,
+) -> Option<RssData> {
+    // before request
+    let client = reqwest::Client::builder()
+            .user_agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
+            .gzip(true)
+            .deflate(true)
+            .brotli(true)
+            .timeout(Duration::from_secs(60))
+    .build().unwrap();
+    let request = client.get(source);
+    let cached_response = get_response_with_cache(request, redis_conn, source).await;
+    // only fetch feeds not cached
+    if let CachedHttpResponse::Miss(http_response) = cached_response {
+        let feed = feed_rs::parser::parse(&http_response.body[..]).unwrap();
+        RssData::from_feed(&feed, source.to_string())
+    } else {
+        None
+    }
+}
 
 #[derive(Serialize, Debug, Clone, Default)]
 pub struct PodcastChannel {
@@ -19,27 +66,13 @@ pub struct PodcastChannel {
     pub image: Option<String>,
 }
 
-fn tags_from_categories(categories: Vec<Category>) -> Option<String> {
-    let tags = categories
-        .clone()
-        .iter()
-        .map(|c| c.term.clone())
-        .collect::<Vec<String>>()
-        .join(",");
-    (!tags.is_empty()).then(|| tags)
-}
-
-pub fn gen_uuid(guid: String) -> Uuid {
-    Uuid::new_v5(&Uuid::NAMESPACE_URL, guid.as_bytes())
-}
-
 impl PodcastChannel {
     pub fn from_feed(feed: &Feed, rss_link: String) -> Option<Self> {
         if feed.title.is_none() || feed.links.is_empty() {
             None
         } else {
             Some(Self {
-                id: gen_uuid(feed.id.clone()),
+                id: gen_uuid_from_existing_id(feed.id.clone()),
                 title: feed.title.clone().unwrap().content,
                 website_link: feed.links.clone()[0].href.clone(),
                 author: feed.authors.get(0).map(|p| p.name.clone()),
@@ -53,6 +86,7 @@ impl PodcastChannel {
     }
 }
 
+// DB Episode table entity
 #[derive(Serialize, Debug, Clone)]
 pub struct PodcastEpisode {
     pub channel_id: Uuid,
@@ -67,6 +101,9 @@ pub struct PodcastEpisode {
     pub audio_link: String,
 }
 
+// Sqlx doesn't support nesting well, and neither does rust support inheritance, so have to manually duplicate fields
+// This is the struct returned for API calls, providing additional channel context data
+// Internally we don't need this
 #[derive(Serialize, Debug, Clone)]
 pub struct PodcastEpisodeDbResult {
     // base PodcastEpisode
@@ -108,7 +145,7 @@ impl PodcastEpisode {
         } else {
             Some(PodcastEpisode {
                 channel_id: source.id.clone(),
-                id: gen_uuid(item.id.clone()),
+                id: gen_uuid_from_existing_id(item.id.clone()),
                 title: item.title.clone().unwrap().content,
                 website_link: item.links.clone()[0].href.clone(),
                 published: item.published.unwrap(),
@@ -121,44 +158,18 @@ impl PodcastEpisode {
     }
 }
 
-pub struct RssData {
-    pub channel: PodcastChannel,
-    pub episodes: Vec<PodcastEpisode>,
+// Struct builder-related helpers
+
+fn tags_from_categories(categories: Vec<Category>) -> Option<String> {
+    let tags = categories
+        .clone()
+        .iter()
+        .map(|c| c.term.clone())
+        .collect::<Vec<String>>()
+        .join(",");
+    (!tags.is_empty()).then(|| tags)
 }
 
-impl RssData {
-    pub fn from_feed(feed: &Feed, rss_link: String) -> Option<Self> {
-        let channel = PodcastChannel::from_feed(feed, rss_link);
-        if let Some(channel) = channel {
-            let mut episodes = feed
-                .entries
-                .iter()
-                .filter_map(|item| PodcastEpisode::from_feed_item(&item, &channel))
-                .collect::<Vec<PodcastEpisode>>();
-            episodes.sort_by_key(|ep| ep.published);
-            Some(Self { channel, episodes })
-        } else {
-            None
-        }
-    }
-}
-
-#[derive(Clone, Debug, Serialize, FromRow)]
-pub struct User {
-    pub id: Uuid,
-    pub name: String,
-    pub email: String,
-    pub password: String,
-    pub salt: Vec<u8>,
-    pub created_at: Option<DateTime<Utc>>,
-}
-
-impl AuthUser<Uuid> for User {
-    fn get_id(&self) -> Uuid {
-        self.id
-    }
-
-    fn get_password_hash(&self) -> SecretVec<u8> {
-        SecretVec::new(self.password.clone().into())
-    }
+fn gen_uuid_from_existing_id(guid: String) -> Uuid {
+    Uuid::new_v5(&Uuid::NAMESPACE_URL, guid.as_bytes())
 }

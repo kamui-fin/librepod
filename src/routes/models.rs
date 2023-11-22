@@ -1,3 +1,5 @@
+// Module for any shared route-related structs or logic
+
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]

@@ -1,11 +1,13 @@
+// HTTP caching (RFC 7234) to speed up fetching RSS feed results with Redis
+
 use derivative::Derivative;
 use http::{request, response};
 use http_cache_semantics::{AfterResponse, BeforeRequest, CachePolicy, ResponseLike};
-use reqwest::header::{HeaderName, HeaderValue};
-use reqwest::{Client, Request, RequestBuilder, Response};
+
+use reqwest::{RequestBuilder, Response};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::time::{SystemTime, UNIX_EPOCH};
+
+use std::time::SystemTime;
 use url::Url;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -124,7 +126,10 @@ pub async fn get_response_with_cache(
                 cached_response.update_headers(&parts);
                 CachedHttpResponse::Hit(cached_response.clone())
             }
-            BeforeRequest::Stale { request, matches } => {
+            BeforeRequest::Stale {
+                request,
+                matches: _,
+            } => {
                 // update parts
                 let request_builder = update_request_parts(request_builder, request);
                 let orig_request = request_builder.try_clone().unwrap().build().unwrap();
@@ -149,7 +154,7 @@ pub async fn get_response_with_cache(
                             cached_response: response,
                         };
                         let cache_item_json = serde_json::to_string(&cache_item).unwrap();
-                        let result = redis::cmd("SET")
+                        let _result = redis::cmd("SET")
                             .arg(source)
                             .arg(cache_item_json)
                             .query_async::<_, ()>(con)
@@ -171,7 +176,7 @@ pub async fn get_response_with_cache(
                 cached_response: response,
             };
             let cache_item_json = serde_json::to_string(&cache_item).unwrap();
-            let result = redis::cmd("SET")
+            let _result = redis::cmd("SET")
                 .arg(source)
                 .arg(cache_item_json)
                 .query_async::<_, ()>(con)

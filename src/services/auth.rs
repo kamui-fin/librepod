@@ -1,9 +1,5 @@
-use crate::{
-    error::{ApiError, ApiResult},
-    models::User,
-};
-use argon2::{Config as ArgonConfig, Variant::Argon2id};
-use chrono::{DateTime, Utc};
+use crate::core::user::{hash_password, User};
+use crate::error::{ApiError, ApiResult};
 use lazy_static::lazy_static;
 use rand::RngCore;
 use regex::Regex;
@@ -50,14 +46,6 @@ fn validate_email_or_username(email_usr: &String) -> Result<(), ValidationError>
     matches
         .then(|| ())
         .ok_or_else(|| ValidationError::new("username_email"))
-}
-
-fn hash_password(plain: &str, salt: &[u8]) -> Result<String, argon2::Error> {
-    let config = ArgonConfig {
-        variant: Argon2id,
-        ..ArgonConfig::default()
-    };
-    argon2::hash_encoded(plain.as_bytes(), &salt, &config)
 }
 
 pub async fn register_user(creds: &SignUpCreds, pool: &Pool<sqlx::Postgres>) -> ApiResult<User> {

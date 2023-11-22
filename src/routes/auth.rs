@@ -4,19 +4,19 @@ use http::StatusCode;
 use serde_json::json;
 use uuid::Uuid;
 
-use crate::{config::AppContext, error::ApiError, models::User, services::user};
+use crate::{config::AppContext, core::user::User, error::ApiError, services::auth};
 
 type AuthContext = axum_login::extractors::AuthContext<Uuid, User, PostgresStore<User>>;
 
 pub async fn register_user(
     mut auth: AuthContext,
     State(state): State<AppContext>,
-    Json(input): Json<user::SignUpCreds>,
+    Json(input): Json<auth::SignUpCreds>,
 ) -> Result<impl IntoResponse, ApiError> {
     if let Some(user) = auth.current_user {
         return Ok((StatusCode::OK, Json(user)));
     }
-    let user = user::register_user(&input, &state.pool).await?;
+    let user = auth::register_user(&input, &state.pool).await?;
     auth.login(&user).await.unwrap();
     Ok((StatusCode::CREATED, Json(user)))
 }
@@ -24,12 +24,12 @@ pub async fn register_user(
 pub async fn login_user(
     mut auth: AuthContext,
     State(state): State<AppContext>,
-    Json(input): Json<user::LoginCreds>,
+    Json(input): Json<auth::LoginCreds>,
 ) -> Result<impl IntoResponse, ApiError> {
     if let Some(user) = auth.current_user {
         return Ok(Json(user));
     }
-    let user = user::login_user(&input, &state.pool).await?;
+    let user = auth::login_user(&input, &state.pool).await?;
     auth.login(&user).await.unwrap();
     Ok(Json(user))
 }

@@ -1,17 +1,22 @@
 mod auth;
+mod channel;
 mod feed;
+mod history;
 mod models;
 
 use self::auth::*;
-use crate::{config::AppContext, models::User};
-use async_redis_session::RedisSessionStore;
+use self::channel::*;
+use self::feed::*;
+use self::history::*;
+
+use crate::{config::AppContext, core::user::User};
+
 use axum::{
-    routing::{delete, get, post, put},
+    routing::{get, post, put},
     Router,
 };
-use axum_login::{axum_sessions::SessionLayer, AuthLayer, RequireAuthorizationLayer, SqlxStore};
-use feed::*;
-use sqlx::{Pool, Postgres};
+use axum_login::RequireAuthorizationLayer;
+
 use uuid::Uuid;
 
 type RequireAuth = RequireAuthorizationLayer<Uuid, User>;
