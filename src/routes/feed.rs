@@ -3,7 +3,7 @@ use axum::{
     response::IntoResponse,
     Extension, Json,
 };
-use serde_json::json;
+use http::StatusCode;
 use uuid::Uuid;
 
 use crate::{config::AppContext, core::user::User, error::ApiError, services::feed};
@@ -16,6 +16,9 @@ pub async fn get_episode(
     State(state): State<AppContext>,
 ) -> Result<impl IntoResponse, ApiError> {
     let episode = feed::get_episode(id, &state.pool).await?;
+    if episode.is_none() {
+        return Err(ApiError::new("episode not found", StatusCode::NOT_FOUND));
+    }
     Ok(Json(episode))
 }
 
@@ -34,5 +37,5 @@ pub async fn refresh_feed(
     State(mut state): State<AppContext>,
 ) -> Result<impl IntoResponse, ApiError> {
     feed::update_all_feeds(&mut state.redis_manager, &state.pool).await?;
-    Ok(Json(json!({"ok": true})))
+    Ok(StatusCode::OK)
 }

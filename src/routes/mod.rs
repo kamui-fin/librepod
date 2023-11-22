@@ -34,7 +34,6 @@ pub fn build_router() -> Router<AppContext> {
         .route_layer(RequireAuth::login());
 
     let auth_routes = Router::new()
-        .route("/me", get(me))
         .route("/logout", put(logout_user))
         .route_layer(RequireAuth::login())
         .route("/register", put(register_user))

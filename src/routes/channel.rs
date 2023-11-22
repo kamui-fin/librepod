@@ -4,6 +4,7 @@ use axum::{
     response::IntoResponse,
     Extension, Json,
 };
+use http::StatusCode;
 use serde_json::json;
 use uuid::Uuid;
 
@@ -36,6 +37,9 @@ pub async fn get_subscription(
     State(state): State<AppContext>,
 ) -> Result<impl IntoResponse, ApiError> {
     let channel = channel::get_channel(id, &state.pool).await?;
+    if channel.is_none() {
+        return Err(ApiError::new("channel not found", StatusCode::NOT_FOUND));
+    }
     let episodes = feed::get_channel_episodes(id, &state.pool).await?;
     Ok(Json(json!({
         "channel": channel,
@@ -71,5 +75,8 @@ pub async fn delete_subscription(
     State(state): State<AppContext>,
 ) -> Result<impl IntoResponse, ApiError> {
     let res = channel::delete_subscription(user.id, id, &state.pool).await?;
-    Ok(Json(json!({ "ok": res })))
+    if !res {
+        return Err(ApiError::new("subscription not found", StatusCode::NOT_FOUND));
+    }
+    Ok(StatusCode::OK)
 }

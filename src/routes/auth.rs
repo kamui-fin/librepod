@@ -36,9 +36,5 @@ pub async fn login_user(
 
 pub async fn logout_user(mut auth: AuthContext) -> Result<impl IntoResponse, ApiError> {
     auth.logout().await;
-    Ok(Json(json!({"ok": "true"})))
-}
-
-pub async fn me(Extension(user): Extension<User>) -> Result<impl IntoResponse, ApiError> {
-    Ok(format!("Hey {}", user.name))
+    Ok(StatusCode::OK)
 }

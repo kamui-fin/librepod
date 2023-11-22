@@ -4,7 +4,7 @@ use axum::{
     response::IntoResponse,
     Extension, Json,
 };
-use serde_json::json;
+use http::StatusCode;
 use uuid::Uuid;
 
 pub async fn add_history(
@@ -12,8 +12,11 @@ pub async fn add_history(
     Path(id): Path<Uuid>,
     State(state): State<AppContext>,
 ) -> Result<impl IntoResponse, ApiError> {
-    history::mark_played(user.id, id, &state.pool).await?;
-    Ok(Json(json!({"ok": true})))
+    let res = history::mark_played(user.id, id, &state.pool).await?;
+    if !res {
+        return Err(ApiError::new("episode not found", StatusCode::NOT_FOUND));
+    }
+    Ok(StatusCode::CREATED)
 }
 
 pub async fn get_history(
@@ -28,6 +31,9 @@ pub async fn clear_history(
     Extension(user): Extension<User>,
     State(state): State<AppContext>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let result = history::clear_history(user.id, &state.pool).await?;
-    Ok(Json(json!({ "ok": result })))
+    let res = history::clear_history(user.id, &state.pool).await?;
+    if !res {
+        return Ok(StatusCode::NO_CONTENT);
+    }
+    Ok(StatusCode::OK)
 }
