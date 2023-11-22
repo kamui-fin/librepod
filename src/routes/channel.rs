@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::{
     config::AppContext,
     core::{rss::get_rss_data, user::User},
-    error::AppError,
+    error::ApiError,
     services::channel,
     services::feed,
 };
@@ -25,7 +25,7 @@ pub struct AddChannel {
 pub async fn get_subscriptions(
     Extension(user): Extension<User>,
     State(state): State<AppContext>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<impl IntoResponse, ApiError> {
     let channels = channel::get_subscriptions(&state.pool, user.id).await?;
     Ok(Json(channels))
 }
@@ -34,7 +34,7 @@ pub async fn get_subscription(
     Extension(_user): Extension<User>,
     Path(id): Path<Uuid>,
     State(state): State<AppContext>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<impl IntoResponse, ApiError> {
     let channel = channel::get_channel(id, &state.pool).await?;
     let episodes = feed::get_channel_episodes(id, &state.pool).await?;
     Ok(Json(json!({
@@ -47,7 +47,7 @@ pub async fn add_subscription(
     Extension(user): Extension<User>,
     State(mut state): State<AppContext>,
     Json(input): Json<AddChannel>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<impl IntoResponse, ApiError> {
     let data = get_rss_data(&input.rss_link, &mut state.redis_manager)
         .await
         .ok_or(anyhow!("could not fetch feed"))?;
@@ -65,11 +65,11 @@ pub async fn add_subscription(
     Ok(Json(data.channel))
 }
 
-pub async fn delete_channel(
+pub async fn delete_subscription(
     Extension(user): Extension<User>,
     Path(id): Path<Uuid>,
     State(state): State<AppContext>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<impl IntoResponse, ApiError> {
     let res = channel::delete_subscription(user.id, id, &state.pool).await?;
     Ok(Json(json!({ "ok": res })))
 }

@@ -1,5 +1,9 @@
-use crate::core::user::{hash_password, User};
-use crate::error::{ApiError, ApiResult};
+use crate::{
+    core::user::{hash_password, User},
+    error::{ApiError, ApiResult},
+};
+use anyhow::Context;
+use http::StatusCode;
 use lazy_static::lazy_static;
 use rand::RngCore;
 use regex::Regex;
@@ -50,7 +54,10 @@ fn validate_email_or_username(email_usr: &String) -> Result<(), ValidationError>
 
 pub async fn register_user(creds: &SignUpCreds, pool: &Pool<sqlx::Postgres>) -> ApiResult<User> {
     if creds.validate().is_err() {
-        return Err(ApiError::Validation);
+        return Err(ApiError::new(
+            "error validating sign up body",
+            StatusCode::BAD_REQUEST,
+        ));
     }
 
     let exist_user = sqlx::query!(
@@ -61,14 +68,16 @@ pub async fn register_user(creds: &SignUpCreds, pool: &Pool<sqlx::Postgres>) -> 
     .await;
 
     if exist_user.is_ok() {
-        return Err(ApiError::InvalidCredentials);
+        return Err(ApiError::new(
+            "invalid credentials",
+            StatusCode::UNAUTHORIZED,
+        ));
     }
 
     let mut salt = [0u8; 8];
     rand::thread_rng().fill_bytes(&mut salt);
 
-    let hashed_passwd =
-        hash_password(&creds.password, &salt).map_err(|_| ApiError::InternalServerError)?;
+    let hashed_passwd = hash_password(&creds.password, &salt)?;
 
     let id = Uuid::new_v4();
 
@@ -82,9 +91,9 @@ pub async fn register_user(creds: &SignUpCreds, pool: &Pool<sqlx::Postgres>) -> 
         salt.to_vec()
     )
     .fetch_one(pool)
-    .await;
+    .await.with_context(|| "unable to insert user").map_err(|err| err.into());
 
-    result.map_err(|_| ApiError::InternalServerError)
+    result
 }
 
 pub async fn login_user(creds: &LoginCreds, pool: &Pool<sqlx::Postgres>) -> ApiResult<User> {
@@ -96,16 +105,17 @@ pub async fn login_user(creds: &LoginCreds, pool: &Pool<sqlx::Postgres>) -> ApiR
     .fetch_one(pool)
     .await
     .map_err(|e| match e {
-        sqlx::error::Error::RowNotFound => ApiError::InvalidCredentials,
-        _ => ApiError::InternalServerError,
+        sqlx::error::Error::RowNotFound => {
+            ApiError::new("invalid credentials", StatusCode::UNAUTHORIZED)
+        }
+        _ => e.into(),
     })?;
 
-    let input_hash = hash_password(&creds.password, &exist_user.salt)
-        .map_err(|_| ApiError::InternalServerError)?;
+    let input_hash = hash_password(&creds.password, &exist_user.salt)?;
 
     if input_hash == exist_user.password {
         Ok(exist_user)
     } else {
-        Err(ApiError::InvalidCredentials)
+        Err(ApiError::new("invalid credentials", StatusCode::UNAUTHORIZED))
     }
 }

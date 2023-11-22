@@ -24,7 +24,7 @@ type RequireAuth = RequireAuthorizationLayer<Uuid, User>;
 pub fn build_router() -> Router<AppContext> {
     let channel_routes = Router::new()
         .route("/", get(get_subscriptions).post(add_subscription))
-        .route("/:id", get(get_subscription).delete(delete_channel))
+        .route("/:id", get(get_subscription).delete(delete_subscription))
         .route_layer(RequireAuth::login());
 
     let feed_routes = Router::new()

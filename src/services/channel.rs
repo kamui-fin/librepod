@@ -85,21 +85,6 @@ pub async fn get_channel(id: Uuid, pool: &PgPool) -> Result<Option<PodcastChanne
     Ok(channel)
 }
 
-pub async fn delete_channel(id: Uuid, pool: &PgPool) -> Result<bool> {
-    let rows_affected = sqlx::query!(
-        r#"
-        DELETE FROM channel
-        WHERE id = $1
-    "#,
-        id
-    )
-    .execute(pool)
-    .await?
-    .rows_affected();
-
-    Ok(rows_affected > 0)
-}
-
 pub async fn get_subscriptions(pool: &PgPool, user_id: Uuid) -> Result<Vec<PodcastChannel>> {
     let channels = sqlx::query_as!(
        PodcastChannel,

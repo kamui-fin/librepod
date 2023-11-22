@@ -62,6 +62,22 @@ The Rust-based LibrePod API aims to provide developers with a centralized and co
 The key concept is to encapsulate all podcast-related business logic within a "black box" model on the server side.
 Clients will interact with the API to fetch data and perform actions, abstracting away the complexities of podcast aggregation, caching, and other operations.
 
+While the API is still changing rapidly and swagger documentation will soon be written, I want to document a few important things
+that may cause some confusion.
+
+#### Channels vs Subscriptions vs Feed
+
+A `Feed` in Librepod refers to the overall latest **aggregation** of all episodes collected from a user's subscriptions. Each user
+has their own feed.
+
+A `Channel` is an **immutable** entity representing a podcast source pulled from RSS.
+
+A user may _subscribe_ to a `Channel` creating a `Subscription` relation between the `User` and the `Channel`.
+Even if they unsubscribe, the `Channel` remains on the server.
+
+Channels and subscriptions are distinguished as a caching mechanism, proving to be useful if multiple users exist on a single Librepod instance and potential overlaps in subscriptions.
+Remember, librepod was designed with **scalability** in mind.
+
 ### Future Roadmap
 
 - Introduce Web Sub support, as it is substantially more efficient than manual polling for the feeds that support it

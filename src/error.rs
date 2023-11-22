@@ -2,57 +2,45 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
-use derive_more::{Display, Error};
-use http::StatusCode;
+use http::{header, StatusCode};
 use serde_json::json;
 
-pub struct AppError(anyhow::Error);
+pub type ApiResult<T> = Result<T, ApiError>;
 
-impl IntoResponse for AppError {
-    fn into_response(self) -> Response {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Something went wrong: {}", self.0),
-        )
-            .into_response()
-    }
+pub struct ApiError {
+    pub msg: String,
+    pub status_code: StatusCode,
 }
 
-impl<E> From<E> for AppError
+impl<E> From<E> for ApiError
 where
     E: Into<anyhow::Error>,
 {
     fn from(err: E) -> Self {
-        Self(err.into())
+        let err: anyhow::Error = err.into();
+        Self {
+            msg: format!("Something went wrong: {err}"),
+            status_code: StatusCode::INTERNAL_SERVER_ERROR,
+        }
     }
 }
 
-pub type ApiResult<T> = Result<T, ApiError>;
-
-#[derive(Debug, Display, Error)]
-pub enum ApiError {
-    #[display(fmt = "Bad request")]
-    BadRequest,
-    #[display(fmt = "Internal server error")]
-    InternalServerError,
-    #[display(fmt = "Invalid credentials")]
-    InvalidCredentials,
-    #[display(fmt = "Invalid input")]
-    Validation,
-}
-
 impl ApiError {
-    fn status_code(&self) -> StatusCode {
-        match *self {
-            ApiError::InternalServerError => StatusCode::INTERNAL_SERVER_ERROR,
-            ApiError::BadRequest | ApiError::Validation => StatusCode::BAD_REQUEST,
-            ApiError::InvalidCredentials => StatusCode::UNAUTHORIZED,
+    pub fn new(msg: &str, status_code: StatusCode) -> Self {
+        Self {
+            msg: msg.into(),
+            status_code,
         }
     }
 }
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
-        (self.status_code(), Json(json!({"error": self.to_string()}))).into_response()
+        (
+            self.status_code,
+            [(header::CONTENT_TYPE, "applications/json")],
+            Json(json!({ "error": self.msg })),
+        )
+            .into_response()
     }
 }
