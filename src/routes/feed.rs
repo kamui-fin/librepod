@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use anyhow::anyhow;
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     response::IntoResponse,
     Extension, Json,
 };
@@ -16,6 +16,8 @@ use crate::{
     models::{gen_uuid, PodcastChannel, PodcastEpisode, PodcastEpisodeDbResult, User},
     services::feed,
 };
+
+use super::models::PaginationParams;
 
 #[derive(Deserialize)]
 pub struct AddChannel {
@@ -86,8 +88,10 @@ pub async fn get_episode(
 pub async fn retrieve_feed(
     Extension(user): Extension<User>,
     State(state): State<AppContext>,
+    Query(params): Query<PaginationParams>,
 ) -> Result<impl IntoResponse, AppError> {
-    let episodes = feed::get_subscription_episodes(user.id, &state.pool).await?;
+    let (offset, limit) = (params.offset.unwrap_or(0), params.limit.unwrap_or(15));
+    let episodes = feed::get_subscription_episodes(user.id, &state.pool, offset, limit).await?;
     Ok(Json(episodes))
 }
 

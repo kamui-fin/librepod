@@ -21,6 +21,7 @@ module.exports = {
         "@typescript-eslint/no-non-null-assertion": "off",
         "no-unused-vars": "off", // or "@typescript-eslint/no-unused-vars": "off",
         "unused-imports/no-unused-imports": "warn",
-        "@typescript-eslint/no-unused-vars": "off"
+        "@typescript-eslint/no-unused-vars": "off",
     },
+    ignorePatterns: ["package*.json"],
 }

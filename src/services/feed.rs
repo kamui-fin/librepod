@@ -241,6 +241,8 @@ pub async fn get_episode(
 pub async fn get_subscription_episodes(
     user_id: Uuid,
     pool: &PgPool,
+    offset: i64,
+    limit: i64,
 ) -> Result<Vec<PodcastEpisodeDbResult>> {
     let episodes = sqlx::query_as!(
         PodcastEpisodeDbResult,
@@ -251,9 +253,12 @@ pub async fn get_subscription_episodes(
         LEFT JOIN channel AS c ON c.id = e.channel_id
         WHERE user_id = $1
         ORDER BY published DESC
-        LIMIT 20
+        OFFSET $2
+        LIMIT $3
         "#,
-        user_id
+        user_id,
+        offset,
+        limit
     )
     .fetch_all(pool)
     .await?;

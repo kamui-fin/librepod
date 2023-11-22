@@ -18,7 +18,7 @@ import { getSubscriptionById } from "@/lib/api"
 import { useQuery } from "@tanstack/react-query"
 import { keywordSelect } from "@/lib/search"
 import { Episode } from "@/lib/types"
-import { useErrorToast } from "@/lib/useGlobalErrorToast"
+import Loader from "@/components/Loader"
 
 const ChannelPage = () => {
     const { id } = useParams()
@@ -28,7 +28,7 @@ const ChannelPage = () => {
     const [recentSort, setRecentSort] = useState("")
 
     const defaultValue = { channel: null, episodes: [] }
-    const { data, error } = useQuery({
+    const { data, isLoading } = useQuery({
         queryKey: ["channel", id],
         queryFn: async () => {
             if (!id) throw Error("Invalid channel ID")
@@ -38,10 +38,7 @@ const ChannelPage = () => {
         refetchOnReconnect: false,
         refetchOnWindowFocus: false,
     })
-    useErrorToast({ error })
     const { channel, episodes } = data || defaultValue
-
-    if (!channel) return <></>
 
     const sortEpisodes = (episodes: Episode[]) => {
         if (recentSort === "Most Recent") {
@@ -68,28 +65,39 @@ const ChannelPage = () => {
                 ]}
             />
             <Layout inner>
-                <ChannelMeta channel={channel} />
-                <p className={styles.epCount}>
-                    {channel.num_episodes} EPISODES
-                </p>
-                <Divider />
-                <div className={cx(styles.actions, styles.spaceBottom)}>
-                    <Button
-                        secondary
-                        onClick={() => {
-                            queueFromList(episodes)
-                        }}
-                    >
-                        <BsFillPlayFill />
-                        <span>Play All</span>
-                    </Button>
-                    <Select
-                        items={["Most Recent", "Least Recent"]}
-                        icon={<MdSort />}
-                        onDone={setRecentSort}
-                    />
-                </div>
-                <EpisodeList items={filteredEpisodes} withoutDate />
+                <Loader isLoading={isLoading}>
+                    {channel !== null && (
+                        <>
+                            <ChannelMeta channel={channel} />
+                            <p className={styles.epCount}>
+                                {channel.num_episodes} EPISODES
+                            </p>
+                            <Divider />
+                            <div
+                                className={cx(
+                                    styles.actions,
+                                    styles.spaceBottom,
+                                )}
+                            >
+                                <Button
+                                    secondary
+                                    onClick={() => {
+                                        queueFromList(episodes)
+                                    }}
+                                >
+                                    <BsFillPlayFill />
+                                    <span>Play All</span>
+                                </Button>
+                                <Select
+                                    items={["Most Recent", "Least Recent"]}
+                                    icon={<MdSort />}
+                                    onDone={setRecentSort}
+                                />
+                            </div>
+                            <EpisodeList items={filteredEpisodes} withoutDate />
+                        </>
+                    )}
+                </Loader>
             </Layout>
         </Layout>
     )

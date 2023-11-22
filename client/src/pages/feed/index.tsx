@@ -7,21 +7,50 @@ import ActionTitleBar from "../../components/ActionTitleBar"
 import Select from "../../components/Select"
 import { DateTime } from "luxon"
 import { usePlayer } from "@/lib/usePlayer"
-import { useQuery } from "@tanstack/react-query"
+import { useInfiniteQuery } from "@tanstack/react-query"
 import { getFeed } from "@/lib/api"
 import { Episode } from "@/lib/types"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { keywordSelect } from "@/lib/search"
 import Loader from "@/components/Loader"
+import { useInView } from "react-intersection-observer"
+import cx from "classnames"
+import styles from "./style.module.scss"
+
+const RESULTS_PER_PAGE = 15
+
+type Params = { pageParam?: number }
+type KeyParams = {
+    [key: string]: any
+}
 
 const FeedPage = () => {
-    const { data, isLoading, isError, error } = useQuery({
+    const { data, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery<
+        Episode[],
+        Episode,
+        Episode[],
+        Array<string | KeyParams>,
+        number
+    >({
         queryKey: ["feed"],
-        queryFn: getFeed,
+        queryFn: async ({ pageParam = 0 }: Params): Promise<Episode[]> =>
+            await getFeed({
+                offset: RESULTS_PER_PAGE * pageParam,
+                limit: RESULTS_PER_PAGE,
+            }),
+        getNextPageParam: (lastPage, allPages) => {
+            return lastPage.length > 0 ? allPages.length + 1 : undefined
+        },
+        initialPageParam: 0,
         staleTime: 60 * 1000 * 60 * 10,
         refetchOnReconnect: false,
         refetchOnWindowFocus: false,
+        select: (data) => data.pages.flat(),
     })
+    const { ref, inView } = useInView()
+    useEffect(() => {
+        if (inView) void fetchNextPage()
+    }, [fetchNextPage, inView])
 
     const { queueFromList } = usePlayer()
 
@@ -109,6 +138,11 @@ const FeedPage = () => {
                 />
                 <Loader isLoading={isLoading}>
                     <EpisodeList withThumbnail items={feed} />
+                    <Loader
+                        className={cx({ [styles.hidden]: !hasNextPage })}
+                        isLoading
+                        ref={ref}
+                    />
                 </Loader>
             </Layout>
         </Layout>

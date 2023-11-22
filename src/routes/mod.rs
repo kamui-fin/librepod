@@ -1,5 +1,6 @@
 mod auth;
 mod feed;
+mod models;
 
 use self::auth::*;
 use crate::{config::AppContext, models::User};

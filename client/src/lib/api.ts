@@ -1,5 +1,5 @@
 import Axios, { AxiosError } from "axios"
-import { Episode, ChannelEpisodes, Episode, Channel } from "./types"
+import { ChannelEpisodes, Episode, Channel } from "./types"
 import { LoginBody } from "@/pages/login"
 import { RegisterBody } from "@/pages/register"
 import { User } from "./useAuth"
@@ -49,8 +49,20 @@ export const deleteSubscription = async (
     return data
 }
 
-export const getFeed = async (): Promise<Episode[]> => {
-    const { data } = await axios.get<Episode[]>("/feed") // TODO: we need channel data for each
+export interface PaginationParams {
+    offset: number
+    limit: number
+}
+
+export const getFeed = async (
+    { offset, limit }: PaginationParams = {
+        offset: 0,
+        limit: 15,
+    },
+): Promise<Episode[]> => {
+    const { data } = await axios.get<Episode[]>("/feed", {
+        params: { offset, limit },
+    })
     return data
 }
 
