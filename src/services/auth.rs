@@ -116,6 +116,9 @@ pub async fn login_user(creds: &LoginCreds, pool: &Pool<sqlx::Postgres>) -> ApiR
     if input_hash == exist_user.password {
         Ok(exist_user)
     } else {
-        Err(ApiError::new("invalid credentials", StatusCode::UNAUTHORIZED))
+        Err(ApiError::new(
+            "invalid credentials",
+            StatusCode::UNAUTHORIZED,
+        ))
     }
 }

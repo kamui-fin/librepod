@@ -76,7 +76,10 @@ pub async fn delete_subscription(
 ) -> Result<impl IntoResponse, ApiError> {
     let res = channel::delete_subscription(user.id, id, &state.pool).await?;
     if !res {
-        return Err(ApiError::new("subscription not found", StatusCode::NOT_FOUND));
+        return Err(ApiError::new(
+            "subscription not found",
+            StatusCode::NOT_FOUND,
+        ));
     }
     Ok(StatusCode::OK)
 }

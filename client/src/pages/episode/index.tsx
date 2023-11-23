@@ -10,7 +10,7 @@ import { MdPlaylistAdd } from "react-icons/md"
 import { MdDownloadDone } from "react-icons/md"
 import { usePlayer } from "../../lib/usePlayer"
 import { getEpisodeById, markPlayed } from "@/lib/api"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import DropdownContextMenu from "@/components/DropdownContextMenu"
 import Loader from "@/components/Loader"
 
@@ -29,6 +29,14 @@ const EpisodePage = () => {
         staleTime: Infinity,
         refetchOnReconnect: false,
         refetchOnWindowFocus: false,
+    })
+
+    const queryClient = useQueryClient()
+    const markPlayedMutation = useMutation({
+        mutationFn: markPlayed,
+        onSuccess: async (episode) => {
+            await queryClient.invalidateQueries({ queryKey: ["history"] })
+        },
     })
 
     const { addToQueue, addToFront } = usePlayer()
@@ -74,7 +82,8 @@ const EpisodePage = () => {
                                             icon: <MdDownloadDone />,
                                             text: "Mark Played",
                                             onClick: () => {
-                                                markPlayed(episode)
+                                                markPlayedMutation
+                                                    .mutateAsync(episode)
                                                     .then()
                                                     .catch(console.error)
                                             },

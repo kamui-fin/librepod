@@ -10,39 +10,60 @@ import { stripHtml } from "string-strip-html"
 import { Duration } from "luxon"
 import { useGlobalAudioPlayer } from "react-use-audio-player"
 
-const SidebarPlayer = () => {
-    const [posPercent, setPosPercent] = useState(0)
-    const [paused, setPaused] = useState(true)
-    const [dragging, setDragging] = useState(false)
+const formatLuxon = (seconds: number) => {
+    return Duration.fromMillis(seconds * 1000).shiftTo(
+        "hours",
+        "minutes",
+        "seconds",
+    )
+}
 
+const SidebarPlayer = () => {
     const {
         currentEpisode,
         playNext,
         playPrevious,
         skipTenSeconds,
         replayTenSeconds,
+        synchronizeState,
+        startFrom,
     } = usePlayer()
 
     const { getPosition, duration, seek, pause, play } = useGlobalAudioPlayer()
 
+    const getPercentFromPosition = (position: number) =>
+        (Math.ceil(formatLuxon(position).as("seconds")) * 100) / duration || 0
+
+    const [posPercent, setPosPercent] = useState(0)
+    const [paused, setPaused] = useState(true)
+    const [dragging, setDragging] = useState(false)
+
+    const [prevGetPositionValue, setPrevGetPositionValue] = useState(0)
     const frameRef = useRef<number>()
 
-    const formatLuxon = (seconds: number) => {
-        return Duration.fromMillis(seconds * 1000).shiftTo(
-            "hours",
-            "minutes",
-            "seconds",
-        )
-    }
+    useEffect(() => {
+        setPosPercent(getPercentFromPosition(startFrom))
+    }, [startFrom, getPercentFromPosition])
+
+    const pos = Math.round(getPosition())
+    useEffect(() => {
+        if (
+            prevGetPositionValue !== null &&
+            prevGetPositionValue !== pos &&
+            currentEpisode
+        ) {
+            synchronizeState({
+                episode_id: currentEpisode.id,
+                player_time: pos,
+            })
+        }
+        setPrevGetPositionValue(pos)
+    }, [pos, prevGetPositionValue, currentEpisode])
 
     useEffect(() => {
         const animate = () => {
-            if (!dragging) {
-                setPosPercent(
-                    (Math.ceil(formatLuxon(getPosition()).as("seconds")) *
-                        100) /
-                        duration || 0,
-                )
+            if (!dragging && !paused) {
+                setPosPercent(getPercentFromPosition(getPosition()))
                 frameRef.current = requestAnimationFrame(animate)
             }
         }
@@ -54,7 +75,7 @@ const SidebarPlayer = () => {
                 cancelAnimationFrame(frameRef.current)
             }
         }
-    }, [dragging])
+    }, [dragging, paused, pos, prevGetPositionValue])
 
     const pauseUnpause = () => {
         setPaused(!paused)
@@ -93,7 +114,6 @@ const SidebarPlayer = () => {
                     }}
                     onFinalChange={(values) => {
                         const [pos] = values
-                        console.log(pos, Math.round((pos * duration) / 100))
 
                         setPosPercent(pos)
                         seek(Math.round((pos * duration) / 100))

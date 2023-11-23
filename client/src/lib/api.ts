@@ -82,7 +82,7 @@ export const clearHistory = async (): Promise<OkResponse> => {
 }
 
 export const markPlayed = async (episode: Episode) => {
-    await axios.post(`/history/${episode.id}`)
+    await axios.post(`/user/history/${episode.id}`)
 }
 
 // Authentication calls

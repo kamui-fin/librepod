@@ -24,7 +24,7 @@ feed-rs = { version = "1.3.0" }
 redis = { version = "0.23.0", features = ["tokio-comp", "connection-manager"]}
 serde_json = "1.0"
 anyhow = "1.0.71"
-axum = "0.6.18"
+axum = { version = "0.6.18", features = ["ws", "headers"] }
 tokio-cron-scheduler = "*"
 envconfig = "0.10.0"
 dotenv = "0.15.0"
@@ -42,3 +42,4 @@ tower-http = { version = "0.4.1", features = ["cors", "trace"]}
 mime = {version = "0.3.17"}
 mime_serde_shim = "0.2"
 serde_with = "3.1.0"
+axum-extra = { version = "0.8.0", features = ["typed-routing"] }

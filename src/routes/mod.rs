@@ -3,11 +3,13 @@ mod channel;
 mod feed;
 mod history;
 mod models;
+mod player;
 
 use self::auth::*;
 use self::channel::*;
 use self::feed::*;
 use self::history::*;
+use self::player::*;
 
 use crate::{config::AppContext, core::user::User};
 
@@ -17,6 +19,8 @@ use axum::{
 };
 use axum_login::RequireAuthorizationLayer;
 
+use tower_http::trace::DefaultMakeSpan;
+use tower_http::trace::TraceLayer;
 use uuid::Uuid;
 
 type RequireAuth = RequireAuthorizationLayer<Uuid, User>;
@@ -47,10 +51,19 @@ pub fn build_router() -> Router<AppContext> {
         .nest("/history", history_routes)
         .route_layer(RequireAuth::login());
 
+    let player_routes = Router::new()
+        .route("/", get(player_ws_handler))
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::default().include_headers(true)),
+        )
+        .route_layer(RequireAuth::login());
+
     Router::new()
         .route("/", get(|| async { "Hello, World!" }))
         .nest("/channel", channel_routes)
         .nest("/feed", feed_routes)
         .nest("/auth", auth_routes)
         .nest("/user", user_routes)
+        .nest("/player", player_routes)
 }

@@ -12,6 +12,7 @@ use axum_login::axum_sessions::SessionLayer;
 use axum_login::{AuthLayer, PostgresStore};
 use config::{get_app_uri, init_context};
 
+use std::net::SocketAddr;
 use std::time::Duration;
 use tokio_cron_scheduler::{Job, JobScheduler};
 use tower_http::cors::CorsLayer;
@@ -75,7 +76,7 @@ async fn start_server() -> Result<()> {
         .layer(session_layer)
         .layer(cors)
         .layer(TraceLayer::new_for_http())
-        .into_make_service();
+        .into_make_service_with_connect_info::<SocketAddr>();
 
     axum::Server::bind(&app_url.parse().unwrap())
         .serve(app)
